@@ -1,5 +1,6 @@
 // Fonctions d'accès aux données : l'interface ne parle jamais directement à Dexie.
 import { REGLAGES_DEFAUT, type Reglages } from '../domain/reglages';
+import { verifierNote, type Note } from '../domain/notation';
 import type { Personnalisation } from '../domain/reorganisation';
 import type { Plan } from '../domain/schema/plan';
 import {
@@ -7,6 +8,7 @@ import {
   meta,
   type BaseBatch,
   type Cochage,
+  type NoteEnregistree,
   type PersonnalisationEnregistree,
   type PlanEnregistre,
   type RecetteEnregistree,
@@ -123,6 +125,33 @@ export const cles = {
   prefixeEtapes: (mois: string, semaine: number) => `${mois}|etape|${semaine}|`,
 };
 
+/** Enregistre des notes (une par personne) ; chacune est vérifiée avant, rien n'est écrit en cas d'erreur. */
+export async function ajouterNotes(notes: Omit<Note, 'id'>[], base: BaseBatch = db): Promise<string[]> {
+  notes.forEach(verifierNote);
+  const m = meta();
+  const avecId = notes.map((n) => ({ ...n, id: crypto.randomUUID(), ...m }));
+  await base.notations.bulkAdd(avecId);
+  return avecId.map((n) => n.id);
+}
+
+/** Suppression logique (garde la trace pour une future synchronisation). */
+export async function supprimerNote(id: string, base: BaseBatch = db): Promise<void> {
+  await base.notations.update(id, { supprimeLe: Date.now(), majLe: Date.now() });
+}
+
+export async function listerNotes(base: BaseBatch = db): Promise<Note[]> {
+  return (await base.notations.toArray()).filter((n) => !n.supprimeLe).map(versNote);
+}
+
+export async function notesDeRecette(recetteId: string, base: BaseBatch = db): Promise<Note[]> {
+  return (await base.notations.where('recetteId').equals(recetteId).toArray()).filter((n) => !n.supprimeLe).map(versNote);
+}
+
+function versNote(n: NoteEnregistree): Note {
+  const { majLe: _m, appareil: _a, supprimeLe: _s, ...note } = n;
+  return note;
+}
+
 /** Sauvegarde complète (tout ce qui est sur ce téléphone), pour la garder ou changer d'appareil. */
 export type Sauvegarde = {
   format: 'batch-cooking-sauvegarde';
@@ -134,6 +163,8 @@ export type Sauvegarde = {
   reglages: Reglages;
   /** Absent des sauvegardes faites avant la réorganisation des étapes. */
   personnalisations?: PersonnalisationEnregistree[];
+  /** Absent des sauvegardes faites avant la notation des recettes. */
+  notations?: NoteEnregistree[];
 };
 
 export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegarde> {
@@ -146,6 +177,7 @@ export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegar
     cochages: await base.cochages.toArray(),
     reglages: await lireReglages(base),
     personnalisations: await base.personnalisations.toArray(),
+    notations: await base.notations.toArray(),
   };
 }
 
@@ -153,13 +185,14 @@ export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegar
 export async function restaurerSauvegarde(s: Sauvegarde, base: BaseBatch = db): Promise<void> {
   if (s.format !== 'batch-cooking-sauvegarde' || s.version !== 1)
     throw new Error('Ce fichier n’est pas une sauvegarde de l’application (format ou version inconnus).');
-  const tables = [base.plans, base.recettes, base.cochages, base.reglages, base.personnalisations];
+  const tables = [base.plans, base.recettes, base.cochages, base.reglages, base.personnalisations, base.notations];
   await base.transaction('rw', tables, async () => {
     await Promise.all(tables.map((t) => t.clear()));
     await base.plans.bulkPut(s.plans);
     await base.recettes.bulkPut(s.recettes);
     await base.cochages.bulkPut(s.cochages);
     await base.personnalisations.bulkPut(s.personnalisations ?? []);
+    await base.notations.bulkPut(s.notations ?? []);
     await enregistrerReglages(s.reglages, base);
   });
 }

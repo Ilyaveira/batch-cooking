@@ -4,6 +4,7 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { Ingredient, Plan, Recette } from '../domain/schema/plan';
 import type { Reglages } from '../domain/reglages';
+import type { Note } from '../domain/notation';
 import type { Personnalisation } from '../domain/reorganisation';
 
 type Meta = { majLe: number; appareil: string; supprimeLe?: number };
@@ -22,12 +23,16 @@ export type ReglagesEnregistres = Meta & { cle: 'reglages'; valeur: Reglages };
 /** Ordre et heures des étapes modifiés dans l'app. Clé : « mois|semaine ». */
 export type PersonnalisationEnregistree = Meta & Personnalisation & { cle: string; mois: string; semaine: number };
 
+/** Une note donnée par une personne à une recette, un jour donné (historique). */
+export type NoteEnregistree = Meta & Note;
+
 export class BaseBatch extends Dexie {
   plans!: EntityTable<PlanEnregistre, 'id'>;
   recettes!: EntityTable<RecetteEnregistree, 'id'>;
   cochages!: EntityTable<Cochage, 'cle'>;
   reglages!: EntityTable<ReglagesEnregistres, 'cle'>;
   personnalisations!: EntityTable<PersonnalisationEnregistree, 'cle'>;
+  notations!: EntityTable<NoteEnregistree, 'id'>;
 
   constructor(nom = 'batch-cooking') {
     super(nom);
@@ -39,6 +44,8 @@ export class BaseBatch extends Dexie {
     });
     // v2 : réorganisation des étapes de session (les données v1 sont conservées telles quelles).
     this.version(2).stores({ personnalisations: 'cle, mois, majLe' });
+    // v3 : notation des recettes (historique). Les données v1/v2 sont conservées.
+    this.version(3).stores({ notations: 'id, recetteId, majLe' });
   }
 }
 

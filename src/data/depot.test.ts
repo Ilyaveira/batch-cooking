@@ -6,7 +6,11 @@ import {
   cles,
   cocher,
   cochagesAvecPrefixe,
+  ajouterNotes,
   enregistrerPersonnalisation,
+  listerNotes,
+  notesDeRecette,
+  supprimerNote,
   enregistrerReglages,
   lirePersonnalisation,
   personnalisationsDuMois,
@@ -124,5 +128,35 @@ describe('dépôt', () => {
     await enregistrerPersonnalisation('2026-11', 1, perso, base);
     expect(await lirePersonnalisation('2026-11', 1, base)).toEqual(perso);
     expect((await personnalisationsDuMois('2026-11', base)).get(1)).toEqual(perso);
+  });
+
+  it('enregistre des notes, les liste par recette, les supprime et les sauvegarde', async () => {
+    const ids = await ajouterNotes(
+      [
+        { recetteId: 'mujaddara', personneId: 'a', date: '2026-11-10', facilite: 4, gout: 5, commentaire: 'à refaire' },
+        { recetteId: 'mujaddara', personneId: 'b', date: '2026-11-10', facilite: null, gout: 3 },
+      ],
+      base,
+    );
+    expect(ids).toHaveLength(2);
+    expect((await notesDeRecette('mujaddara', base)).map((n) => n.gout).sort()).toEqual([3, 5]);
+    await supprimerNote(ids[1]!, base);
+    expect(await listerNotes(base)).toHaveLength(1);
+    // Une note invalide n'écrit rien.
+    await expect(ajouterNotes([{ recetteId: 'x', personneId: 'a', date: '2026-11-10', facilite: 9, gout: 3 }], base)).rejects.toThrow();
+    expect(await listerNotes(base)).toHaveLength(1);
+
+    const s = JSON.parse(JSON.stringify(await exporterSauvegarde(base)));
+    const autre = new BaseBatch(`test-${Math.random()}`);
+    await restaurerSauvegarde(s, autre);
+    expect((await listerNotes(autre))[0]!.commentaire).toBe('à refaire');
+    await autre.delete();
+  });
+
+  it('supprimer un plan garde les notes (les recettes restent dans la bibliothèque)', async () => {
+    await importerPlan(fixturePlan(), base);
+    await ajouterNotes([{ recetteId: 'mujaddara', personneId: 'a', date: '2026-11-10', facilite: 4, gout: 5 }], base);
+    await supprimerPlan('2026-11', base);
+    expect(await listerNotes(base)).toHaveLength(1);
   });
 });

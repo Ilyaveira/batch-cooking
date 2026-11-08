@@ -31,6 +31,7 @@ import type { EtapeSession, Plan, Semaine, Session as TypeSession } from '../dom
 import { aSortir, etapesTriees, planning } from '../domain/session';
 import { Case, TexteEtape } from '../ui/composants';
 import { ContenuBloc, EnteteBloc } from './EtapeSession';
+import { Gantt } from './Gantt';
 import { OngletsSemaine } from './OngletsSemaine';
 
 /** Regroupe les blocs par tranches de 30 minutes. */
@@ -386,6 +387,13 @@ export function Session({
               <p>{a.ustensiles.join(', ')}</p>
             </>
           )}
+        </section>
+      )}
+
+      {session && !reorganiser && (
+        <section className="carte">
+          <h2>Planning</h2>
+          <Gantt session={session} />
         </section>
       )}
 

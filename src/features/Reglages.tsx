@@ -5,6 +5,7 @@ import { usePlans, useReglages } from '../app/hooks';
 import {
   enregistrerReglages,
   exporterSauvegarde,
+  listerNotes,
   personnalisationsDuMois,
   restaurerSauvegarde,
   supprimerPlan,
@@ -12,7 +13,9 @@ import {
 } from '../data/depot';
 import { JOURS } from '../domain/constantes';
 import { moisLong } from '../domain/dates';
+import { exporterNotes } from '../domain/notation';
 import { planAvecPersonnalisations } from '../domain/reorganisation';
+import { db } from '../data/db';
 import { CONSERVATION_DEFAUT, type Reglages as TypeReglages, type TypeConservation } from '../domain/reglages';
 
 function telecharger(nom: string, contenu: unknown) {
@@ -217,6 +220,17 @@ export function Reglages() {
           </Link>
           <button type="button" className="bouton-secondaire" onClick={async () => telecharger(`batch-cooking-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`, await exporterSauvegarde())}>
             Exporter une sauvegarde
+          </button>
+          <button
+            type="button"
+            className="bouton-secondaire"
+            onClick={async () => {
+              const recettes = new Map((await db.recettes.toArray()).map((r) => [r.id, r.recette.nom]));
+              const personnes = new Map(reglages.personnes.map((p) => [p.id, p.nom]));
+              telecharger(`batch-cooking-notes-${new Date().toISOString().slice(0, 10)}.json`, exporterNotes(await listerNotes(), recettes, personnes));
+            }}
+          >
+            Exporter les notes
           </button>
           <label className="bouton-secondaire bouton-fichier">
             Restaurer une sauvegarde

@@ -80,9 +80,10 @@ fusions, voir SCHEMA.md).
 | Repas | « Quand manger quoi » du dimanche soir au jeudi (réglable), avec J+n et un statut de conservation par repas. |
 | Courses | Quantités agrégées par ingrédient, triées par rayon, à cocher ; détail par recette. |
 | Placard | Liste mensuelle à vérifier, avec ce que les recettes du mois en utilisent. |
+| Planning | Dans Session : Gantt d'une ligne par tâche (bleu : actif, vert : cuisson passive, rouge : à surveiller), calculé à partir des étapes, y compris celles modifiées dans l'app. Toucher une barre affiche l'étape ; « Agrandir en paysage » ouvre le planning en plein écran, tourné, tout tient à l'écran. |
 | Session | « À sortir » (frigo, congélateur, légumes, placard, ustensiles) et étapes horodatées par tranches de 30 min, poste en couleur, ingrédients en gras. Bouton **Réorganiser** : déplacer une étape (n° ou flèches), changer son heure, modifier son texte, la scinder, ou la fusionner avec la suivante. |
 | Mode cuisine | Gros texte, écran maintenu allumé (Screen Wake Lock), minuteurs avec rappels (vibration + bip), étapes à cocher, chrono de session. **Heure de début** facultative : les étapes affichent alors l'heure réelle (14:30, 14:35…). |
-| Recettes | Bibliothèque (recherche, filtres végétarien / féculent / saison), fiche avec portions ajustables. |
+| Recettes | Bibliothèque (recherche, filtres végétarien / féculent / saison / note, tri par nom, goût, facilité ou dernière fois cuisinée), fiche avec portions ajustables et **notes** (facilité et goût de 1 à 5 par personne, commentaire, date, historique et moyennes). |
 | Réglages | Personnes et aliments exclus, durées de conservation (avec leur source), four (chaleur tournante, écart), Cook Expert, sauvegarde. |
 
 ### Règles de calcul (aucune valeur inventée)
@@ -125,7 +126,7 @@ npm run valider -- fixtures/novembre-2026-semaine1.json
 
 - `npm run build` régénère `public/schema/plan-v1.schema.json`, vérifie les types et produit `dist/`.
 - `npm run valider -- <fichier>` vérifie un plan en ligne de commande.
-- Parcours de bout en bout sur mobile émulé : `tests/e2e/parcours-mobile.cjs`, `reorganisation-mobile.cjs`, `edition-mobile.cjs` (mode d'emploi en tête de chaque fichier).
+- Parcours de bout en bout sur mobile émulé : `tests/e2e/parcours-mobile.cjs`, `reorganisation-mobile.cjs`, `edition-mobile.cjs`, `dependances-mobile.cjs`, `v2-mobile.cjs` (mode d'emploi en tête de chaque fichier).
 - Icônes : `node scripts/generer-icones.mjs` (Playwright requis).
 
 ### Structure du projet
@@ -140,6 +141,8 @@ src/
 │  ├─ courses.ts      Agrégation des courses et placard du mois
 │  ├─ session.ts      À sortir, étapes, Gantt (couloirs/segments), minuteurs
 │  ├─ calendrier.ts   Quand manger quoi et statuts de conservation
+│  ├─ gantt.ts        Géométrie du planning (barres, graduations)
+│  ├─ notation.ts     Notes : moyennes, tri, filtres, export
 │  ├─ reorganisation.ts Étapes modifiées dans l'app (ordre, heures, textes, scissions, fusions)
 │  ├─ exclusions.ts   Aliments exclus par personne
 │  └─ reglages.ts     Réglages par défaut sourcés, températures du four
@@ -168,8 +171,9 @@ Le workflow `.github/workflows/deploy.yml` teste, construit et publie l'app à c
 
 ## Feuille de route
 
-- **Itération 2** : vue Gantt de la session ; notation des recettes (facilité et goût de 1 à 5 par
-  personne, commentaire, date ; tri et filtre).
+- ~~Itération 2~~ (faite) : vue Gantt de la session ; notation des recettes avec historique, tri,
+  filtre et export des notes pour Claude (Réglages → Exporter les notes ; consigne à ajouter à la
+  skill dans `docs/mise-a-jour-skill.md`).
 - **Itération 3** : nutrition par portion depuis la table Ciqual de l'ANSES (kcal, protéines,
   lipides, AGS, glucides, fibres, sel ; source affichée ; ingrédients non trouvés signalés) ;
   profil et objectifs journaliers.

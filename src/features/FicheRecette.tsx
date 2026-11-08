@@ -10,6 +10,7 @@ import { ingredientsPourPortions } from '../domain/portions';
 import { temperatureAffichee } from '../domain/reglages';
 import { formaterQuantiteUnite } from '../domain/unites';
 import { EnChargement } from '../ui/composants';
+import { SectionNotes } from './Notes';
 
 export function FicheRecette() {
   const { id } = useParams();
@@ -154,6 +155,8 @@ export function FicheRecette() {
           )}
         </dl>
       </section>
+
+      <SectionNotes recetteId={r.id} />
 
       {r.etapes && (
         <section className="carte">

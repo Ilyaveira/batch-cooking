@@ -41,3 +41,20 @@ Points clés :
   `session.modeFour`) ; l'app affiche la valeur en chaleur tournante.
 - Vérifier avant de livrer : `npm run valider -- plan.json` dans le dépôt de l'app, ou l'écran
   « Importer » qui liste les erreurs avec leur chemin.
+
+---
+
+## Tenir compte des notes de l'app (à ajouter dans « Déroulé », étape 1)
+
+Ajoutez à la liste des questions de départ :
+
+- « As-tu un fichier de notes exporté de l'app (`batch-cooking-notes-….json`) ? »
+
+Et cette règle dans « Règles de conception du menu » :
+
+- Si un fichier `batch-cooking-notes` est fourni : les notes vont de 1 (mauvais) à 5 (excellent),
+  pour la facilité et le goût, par personne. Reproposer en priorité les recettes de goût moyen
+  ≥ 4 ; ne pas reproposer telle quelle une recette de goût moyen ≤ 2 ; tenir compte des
+  commentaires (« trop long », « plus épicé »…) et le dire quand une recette est adaptée.
+  Garder le même `id` pour une recette reproposée, afin que ses notes restent attachées.
+  Ne jamais inventer de note pour une recette qui n'en a pas.

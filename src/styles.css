@@ -27,6 +27,9 @@
   --depasse-texte: #8f1d14;
   --inconnu-fond: #ececec;
   --inconnu-texte: #444444;
+  --gantt-actif: #2f6fb3;
+  --gantt-passif: #3f9a5c;
+  --gantt-alerte: #c62828;
   --rayon: 14px;
   color-scheme: light;
 }
@@ -60,6 +63,9 @@
     --depasse-texte: #ffcfc9;
     --inconnu-fond: #2c302e;
     --inconnu-texte: #d0d4d2;
+    --gantt-actif: #6aa8ec;
+    --gantt-passif: #6cc98a;
+    --gantt-alerte: #ff7a6e;
     color-scheme: dark;
   }
 }
@@ -878,4 +884,175 @@ textarea {
 .fin-etape {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* Planning (Gantt) */
+.gantt-conteneur {
+  width: 100%;
+  overflow: hidden;
+}
+.gantt {
+  display: block;
+  font-size: 12px;
+}
+.gantt-fond {
+  fill: var(--surface);
+}
+.gantt-fond-impair {
+  fill: var(--fond);
+}
+.gantt-grille {
+  stroke: var(--bordure);
+  stroke-width: 1;
+}
+.gantt-graduation {
+  fill: var(--discret);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.gantt-libelle {
+  fill: var(--texte);
+}
+.gantt-actif {
+  fill: var(--gantt-actif);
+  background: var(--gantt-actif);
+}
+.gantt-passif {
+  fill: var(--gantt-passif);
+  fill-opacity: 0.55;
+  background: var(--gantt-passif);
+}
+.gantt-alerte {
+  fill: var(--gantt-alerte);
+  background: var(--gantt-alerte);
+}
+.gantt rect[data-etape] {
+  cursor: pointer;
+}
+.gantt-choisie {
+  stroke: var(--texte);
+  stroke-width: 2;
+}
+.gantt-legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+  margin: 0.4rem 0;
+}
+.gantt-legende > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.gantt-pastille {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+}
+.gantt-detail {
+  background: var(--fond);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  margin: 0.3rem 0 0.6rem;
+}
+.gantt-plein-ecran {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--surface);
+  overflow: hidden;
+}
+.gantt-plein-ecran-tourne {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  background: var(--surface);
+}
+.gantt-plein-ecran-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+.gantt-plein-ecran-entete .gantt-legende {
+  margin: 0;
+}
+.gantt-plein-ecran-corps {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Notation */
+.etoiles {
+  display: inline-flex;
+}
+.etoile {
+  background: none;
+  border: none;
+  font-size: 1.7rem;
+  line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--bordure);
+  cursor: pointer;
+}
+.etoile.pleine {
+  color: #b7791f;
+}
+.etoiles-lecture {
+  color: #b7791f;
+  letter-spacing: 1px;
+}
+.etoile-vide {
+  color: var(--bordure);
+}
+.ligne-etoiles {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.note-personne {
+  border: 1px solid var(--bordure);
+  border-radius: 10px;
+  margin: 0.5rem 0;
+  padding: 0.3rem 0.7rem 0.6rem;
+}
+.note-personne legend {
+  font-weight: 700;
+  padding: 0 0.3rem;
+}
+.tableau-notes {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.tableau-notes th,
+.tableau-notes td {
+  text-align: left;
+  padding: 0.3rem 0.2rem;
+  border-bottom: 1px solid var(--bordure);
+}
+.historique-notes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.historique-notes li {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--bordure);
+  font-size: 0.92rem;
+}
+.commentaire-note {
+  margin: 0.2rem 0 0;
+  font-style: italic;
 }

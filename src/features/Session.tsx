@@ -9,13 +9,18 @@ import { LIBELLES_STOCKAGE } from '../domain/constantes';
 import { texteQuantite } from '../domain/courses';
 import { formaterHeureSession, minutesDepuisDebut } from '../domain/dates';
 import {
+  appliquerPersonnalisation,
   blocs as calculerBlocs,
+  changerDurees,
   changerHeure,
+  compterDecalees,
   deplacerEtape,
   ErreurReorganisation,
   formaterSaisieEtape,
   fusionnerAvecSuivante,
+  incoherences as calculerIncoherences,
   modifierTexte,
+  personnalisationDe,
   proposerCoupure,
   scinderEtape,
   separerFusion,
@@ -23,7 +28,7 @@ import {
   type Personnalisation,
 } from '../domain/reorganisation';
 import type { EtapeSession, Plan, Semaine, Session as TypeSession } from '../domain/schema/plan';
-import { aSortir, planning } from '../domain/session';
+import { aSortir, etapesTriees, planning } from '../domain/session';
 import { Case, TexteEtape } from '../ui/composants';
 import { ContenuBloc, EnteteBloc } from './EtapeSession';
 import { OngletsSemaine } from './OngletsSemaine';
@@ -52,6 +57,41 @@ function valider(appliquer: (valeur: string) => boolean) {
       if (ev.key === 'Enter') ev.currentTarget.blur();
     },
   };
+}
+
+/** Durées d'une étape : minutes actives + cuisson passive → heure de fin (modifiables). */
+function Durees({ e, libelle, changer }: { e: EtapeSession; libelle: string; changer: (actif: number, passif: number) => boolean }) {
+  const passif = e.passifMin ?? 0;
+  const fin = formaterHeureSession(minutesDepuisDebut(e.debut) + e.actifMin + passif);
+  return (
+    <div className="durees">
+      <label>
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          defaultValue={e.actifMin}
+          aria-label={`Minutes actives de l’${libelle}`}
+          {...valider((v) => changer(Number(v), passif))}
+        />{' '}
+        min
+      </label>
+      <span aria-hidden="true">+</span>
+      <label>
+        cuisson{' '}
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          defaultValue={passif}
+          aria-label={`Minutes de cuisson de l’${libelle}`}
+          {...valider((v) => changer(e.actifMin, Number(v)))}
+        />{' '}
+        min
+      </label>
+      <span className="fin-etape">→ fin {fin}</span>
+    </div>
+  );
 }
 
 /** Éditeur d'une étape : modifier la consigne et les sous-points, ou scinder en deux. */
@@ -132,12 +172,19 @@ function Reorganisation({
 }) {
   const [erreur, setErreur] = useState<string | null>(null);
   const [enEdition, setEnEdition] = useState<string | null>(null);
+  // Après un décalage d'étapes liées : message + personnalisation précédente pour « Annuler ».
+  const [decalage, setDecalage] = useState<{ n: number; precedente: Personnalisation | null } | null>(null);
   const liste = calculerBlocs(session);
+  const alertes = calculerIncoherences(session, origine);
 
-  const modifier = (calcul: () => Personnalisation | null): boolean => {
+  /** Applique une modification ; `ids` = étapes touchées directement (pour compter les liées). */
+  const modifier = (calcul: () => Personnalisation | null, ids: string[] = []): boolean => {
     try {
+      const precedente = personnalisationDe(etapesTriees(session), origine);
       const perso = calcul();
       setErreur(null);
+      const n = ids.length ? compterDecalees(session, appliquerPersonnalisation(origine, perso), ids) : 0;
+      setDecalage(n > 0 ? { n, precedente } : null);
       void enregistrerPersonnalisation(plan.mois, semaine.numero, perso);
       return true;
     } catch (e) {
@@ -146,7 +193,8 @@ function Reorganisation({
       return false;
     }
   };
-  const deplacer = (id: string, position: number) => modifier(() => deplacerEtape(session, origine, id, position));
+  const idsDe = (b: Bloc) => b.membres.map((m) => m.id);
+  const deplacer = (b: Bloc, position: number) => modifier(() => deplacerEtape(session, origine, b.id, position), idsDe(b));
 
   return (
     <>
@@ -159,9 +207,25 @@ function Reorganisation({
           {erreur}
         </p>
       )}
+      {decalage && (
+        <p className="bandeau-info" role="status">
+          {decalage.n} étape{decalage.n > 1 ? 's' : ''} liée{decalage.n > 1 ? 's' : ''} décalée{decalage.n > 1 ? 's' : ''} d’autant (même
+          ligne du planning).{' '}
+          <button
+            type="button"
+            className="bouton-lien"
+            onClick={() => {
+              void enregistrerPersonnalisation(plan.mois, semaine.numero, decalage.precedente);
+              setDecalage(null);
+            }}
+          >
+            Annuler
+          </button>
+        </p>
+      )}
       <ol className="reorganisation">
         {liste.map((b, i) => (
-          <li key={`${b.id}-${i}-${b.debut}-${b.membres.length}`} className="ligne-reorganisation">
+          <li key={`${b.id}-${i}-${b.debut}-${b.membres.map((m) => `${m.actifMin}.${m.passifMin ?? 0}`).join('-')}`} className="ligne-reorganisation">
             <div className="reorganisation-commandes">
               <input
                 type="number"
@@ -170,9 +234,9 @@ function Reorganisation({
                 max={liste.length}
                 defaultValue={i + 1}
                 aria-label={`Numéro de l’étape ${i + 1}`}
-                {...valider((v) => deplacer(b.id, Number(v)))}
+                {...valider((v) => deplacer(b, Number(v)))}
               />
-              <button type="button" className="bouton-rond" aria-label={`Monter l’étape ${i + 1}`} disabled={i === 0} onClick={() => deplacer(b.id, i)}>
+              <button type="button" className="bouton-rond" aria-label={`Monter l’étape ${i + 1}`} disabled={i === 0} onClick={() => deplacer(b, i)}>
                 ↑
               </button>
               <button
@@ -180,7 +244,7 @@ function Reorganisation({
                 className="bouton-rond"
                 aria-label={`Descendre l’étape ${i + 1}`}
                 disabled={i === liste.length - 1}
-                onClick={() => deplacer(b.id, i + 2)}
+                onClick={() => deplacer(b, i + 2)}
               >
                 ↓
               </button>
@@ -190,7 +254,7 @@ function Reorganisation({
                 className="champ-heure"
                 defaultValue={b.debut}
                 aria-label={`Heure de l’étape ${i + 1}`}
-                {...valider((v) => modifier(() => changerHeure(session, origine, b.id, v)))}
+                {...valider((v) => modifier(() => changerHeure(session, origine, b.id, v), idsDe(b)))}
               />
             </div>
             <EnteteBloc bloc={b} sansHeure />
@@ -211,6 +275,12 @@ function Reorganisation({
                       ))}
                     </ul>
                   )}
+                  <Durees
+                    e={m}
+                    libelle={`étape ${i + 1}${b.membres.length > 1 ? ` (partie ${b.membres.indexOf(m) + 1})` : ''}`}
+                    changer={(actif, passif) => modifier(() => changerDurees(session, origine, m.id, actif, passif), [m.id])}
+                  />
+                  {alertes.has(m.id) && <p className="texte-alerte petit">⚠ {alertes.get(m.id)}</p>}
                   <button
                     type="button"
                     className="bouton-lien"
@@ -284,6 +354,7 @@ export function Session({
   const session = semaine.session;
   const cle = (id: string) => cles.etape(plan.mois, semaine.numero, id);
   const blocFait = (b: Bloc) => b.membres.every((m) => coches.has(cle(m.id)));
+  const alertes = session && origine ? calculerIncoherences(session, origine) : new Map<string, string>();
 
   return (
     <>
@@ -346,7 +417,7 @@ export function Session({
                     const fait = blocFait(b);
                     return (
                       <Case key={b.id} coche={fait} onChange={() => b.membres.forEach((m) => void cocher(cle(m.id), !fait))}>
-                        <ContenuBloc bloc={b} session={session} reglages={reglages} />
+                        <ContenuBloc bloc={b} session={session} reglages={reglages} alertes={alertes} />
                       </Case>
                     );
                   })}

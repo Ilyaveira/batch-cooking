@@ -28,6 +28,13 @@ Points clés :
 - Session : une liste unique d'`etapes` (heure `h:mm`, `poste`, `actifMin`, `passifMin`,
   `rappelsMin`, `alerte`, ingrédients en `**gras**`) et des `taches` (lignes du Gantt). Le Gantt est
   déduit des étapes : ne pas le fournir séparément.
+- **Aucune heure dans le texte des étapes** (pas de « À 1:08, sors-en 4 ») : chaque action à un
+  autre moment (sortir, retourner, égoutter, couper le feu) est une **étape séparée**, avec
+  `alerte: true`, la **même `tache`** que l'étape de cuisson et `debut` = début de la cuisson +
+  temps écoulé. Exemple : « 10 œufs dans l'eau bouillante » à 1:02 (`actifMin` 1, `passifMin` 9,
+  tâche `oeufs`), puis « Sors 4 œufs (mollets) » à 1:08 et « Sors les 6 autres (durs) » à 1:12,
+  tâche `oeufs`. Dans l'app, déplacer la cuisson déplace ces étapes avec elle.
+- `rappelsMin` : seulement pour des rappels répétés pendant une étape (remuer toutes les 10 min).
 - Pour présenter plusieurs actions comme une seule étape tout en gardant leurs minuteurs (ex.
   lancer lentilles et riz ensemble), leur donner le même `groupe` et la même heure.
 - Les températures des étapes sont écrites pour un four traditionnel (sinon préciser

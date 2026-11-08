@@ -57,6 +57,14 @@ Pour passer d'un appareil à l'autre :
 - **Fusionner avec la suivante** : une seule carte (et une seule case à cocher), à l'heure de la
   1ʳᵉ ; chaque étape garde ses durées et son minuteur (deux boutons en mode cuisine). **Séparer**
   défait la fusion ;
+- **Étapes liées** : les étapes d'une même préparation partagent la même ligne du planning
+  (`tache`). Déplacer une étape (n°, flèches ou heure) décale d'autant les étapes **plus tardives
+  de sa ligne** (ex. avancer « Enfourne » avance « Retourne » et « Sors les plaques »), y compris
+  les heures écrites dans leur texte ; elles restent des cartes séparées, dans l'ordre. Un message
+  indique combien d'étapes ont suivi, avec « Annuler ». Déplacer une étape liée seule ne bouge qu'elle ;
+- **Durées** : minutes actives + cuisson, avec l'heure de fin ; le minuteur suit. Si la fin change,
+  les étapes liées prévues à la fin ou après sont décalées (pas celles prévues pendant la cuisson) ;
+- **⚠ incohérence** : signalée quand une étape tombe avant la fin de la cuisson dont elle dépend ;
 - **Revenir au plan importé** annule toutes les modifications de la semaine.
 
 Les modifications sont gardées à part du plan importé : elles survivent à un réimport (les étapes

@@ -3,10 +3,14 @@ import { heureHorloge, minutesDepuisDebut } from './dates';
 import {
   appliquerPersonnalisation,
   blocs,
+  changerDurees,
   changerHeure,
+  compterDecalees,
+  decalerHeuresTexte,
   deplacerEtape,
   formaterSaisieEtape,
   fusionnerAvecSuivante,
+  incoherences,
   lireHeureSession,
   lireSaisieEtape,
   modifierTexte,
@@ -224,11 +228,15 @@ describe('fusionner des étapes', () => {
     let p = fusion();
     p = deplacerEtape(affichee(p), origine, 's1-03', 5)!;
     const s = affichee(p);
-    const bloc = blocs(s)[4]!;
+    const bloc = blocs(s).find((b) => b.id === 's1-03')!;
     expect(bloc.membres.map((m) => [m.id, m.debut])).toEqual([
       ['s1-03', '0:20'],
       ['s1-04', '0:20'],
     ]);
+    // +15 min : les étapes liées au riz et aux lentilles suivent.
+    const heure = (id: string) => s.etapes.find((e) => e.id === id)!.debut;
+    expect([heure('s1-06'), heure('s1-07')]).toEqual(['0:35', '0:45']);
+    expect(chronologique(s)).toBe(true);
     const separe = affichee(separerFusion(s, origine, 's1-04'));
     expect(blocs(separe)).toHaveLength(23);
     expect(separe.etapes.every((e) => !e.groupe)).toBe(true);
@@ -281,5 +289,84 @@ describe('réimport et export avec textes, scissions et fusions', () => {
       // Réimporté tel quel, le plan affiche la même fusion.
       expect(blocs(r.plan.semaines[0]!.session!)).toHaveLength(23);
     }
+  });
+});
+
+describe('étapes liées : elles suivent la cuisson dont elles dépendent', () => {
+  const heure = (s: Session, id: string) => s.etapes.find((e) => e.id === id)!.debut;
+
+  it('avancer « Enfourne » (0:57 → 0:45) avance « Retourne » et « Sors les plaques » d’autant', () => {
+    const s = affichee(changerHeure(origine, origine, 's1-09', '0:45'));
+    expect([heure(s, 's1-09'), heure(s, 's1-12'), heure(s, 's1-15')]).toEqual(['0:45', '1:01', '1:15']);
+    expect(chronologique(s)).toBe(true);
+    // Cartes séparées, dans l'ordre : enfourne avant retourne avant sortie.
+    const liste = ids(s);
+    expect(liste.indexOf('s1-09')).toBeLessThan(liste.indexOf('s1-12'));
+    expect(liste.indexOf('s1-12')).toBeLessThan(liste.indexOf('s1-15'));
+    expect(compterDecalees(origine, s, ['s1-09'])).toBe(2);
+  });
+
+  it('déplacer la sortie seule ne bouge qu’elle', () => {
+    const s = affichee(changerHeure(origine, origine, 's1-15', '1:35'));
+    expect([heure(s, 's1-09'), heure(s, 's1-12'), heure(s, 's1-15')]).toEqual(['0:57', '1:13', '1:35']);
+    expect(compterDecalees(origine, s, ['s1-15'])).toBe(0);
+  });
+
+  it('les heures écrites dans le texte suivent (œufs 1:02 → 0:50 : « À 0:56 … À 1:00 »)', () => {
+    const s = affichee(changerHeure(origine, origine, 's1-11', '0:50'));
+    const oeufs = s.etapes.find((e) => e.id === 's1-11')!;
+    expect(oeufs.texte).toContain('À 0:56, sors-en 4');
+    expect(oeufs.texte).toContain('À 1:00, sors les 6 autres');
+    expect(oeufs.rappelsMin).toEqual([6, 10]); // relatifs au début : inchangés
+  });
+
+  it('décaler un texte ne touche ni les températures ni les durées', () => {
+    expect(decalerHeuresTexte('À 1:08, 210 °C, 25 min, vitesse 18.', -8)).toBe('À 1:00, 210 °C, 25 min, vitesse 18.');
+    expect(decalerHeuresTexte('À 0:05', -10)).toBe('À 0:00');
+  });
+
+  it('deux étapes à la même heure ne sont pas liées (préchauffer / eau à bouillir)', () => {
+    const s = affichee(changerHeure(origine, origine, 's1-01', '0:03'));
+    expect(heure(s, 's1-02')).toBe('0:00');
+  });
+
+  it('déplacer par numéro décale aussi les liées (enfourner remonté en n° 8 → 0:42)', () => {
+    const s = affichee(deplacerEtape(origine, origine, 's1-09', 8));
+    expect([heure(s, 's1-09'), heure(s, 's1-12'), heure(s, 's1-15')]).toEqual(['0:42', '0:58', '1:12']);
+    expect(chronologique(s)).toBe(true);
+  });
+});
+
+describe('durées modifiables', () => {
+  const heure = (s: Session, id: string) => s.etapes.find((e) => e.id === id)!.debut;
+
+  it('cuisson du four 27 → 35 min : la sortie passe à 1:35, « Retourne » (mi-cuisson) ne bouge pas', () => {
+    const p = changerDurees(origine, origine, 's1-09', 3, 35)!;
+    const s = affichee(p);
+    expect([heure(s, 's1-12'), heure(s, 's1-15')]).toEqual(['1:13', '1:35']);
+    const four = s.etapes.find((e) => e.id === 's1-09')!;
+    expect(minuteurEtape(four)!.dureeMin).toBe(38);
+    expect(p.durees).toEqual({ 's1-09': { actifMin: 3, passifMin: 35 } });
+    expect(chronologique(s)).toBe(true);
+  });
+
+  it('revenir aux durées du plan annule la modification ; une durée invalide est refusée', () => {
+    const p = changerDurees(origine, origine, 's1-09', 3, 35)!;
+    expect(changerDurees(affichee(p), origine, 's1-09', 3, 27)).toBeNull();
+    expect(() => changerDurees(origine, origine, 's1-09', -1, 27)).toThrow(/minutes/);
+  });
+});
+
+describe('incohérences', () => {
+  it('signale une sortie placée avant la fin de la cuisson', () => {
+    const s = affichee(changerHeure(origine, origine, 's1-15', '1:20'));
+    const msg = incoherences(s, origine);
+    expect(msg.get('s1-15')).toBe('Avant la fin de « Deux plaques, 30 min, en une seule cou… » (fin 1:27).');
+    expect(msg.has('s1-12')).toBe(false); // retourner à mi-cuisson est prévu
+  });
+
+  it('rien à signaler dans le plan importé ni après un décalage cohérent', () => {
+    expect(incoherences(origine, origine).size).toBe(0);
+    expect(incoherences(affichee(changerHeure(origine, origine, 's1-09', '0:45')), origine).size).toBe(0);
   });
 });

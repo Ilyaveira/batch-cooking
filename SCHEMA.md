@@ -27,6 +27,10 @@ Ce document décrit le fichier JSON que l'application **Batch cooking** importe.
 >    recette (fruits du dessert, herbes achetées en botte pour toute la semaine…).
 > 6. La session est une liste d'étapes horodatées ; le planning (Gantt) et les minuteurs en sont
 >    déduits. Donne pour chaque étape `actifMin`, et `passifMin` quand une cuisson tourne seule.
+>    N'écris **aucune heure dans le texte** des étapes (pas de « À 1:08, sors… ») : chaque action
+>    à un autre moment (sortir, retourner, égoutter, couper le feu) est une **étape séparée**
+>    avec `alerte: true`, la **même `tache`** que l'étape de cuisson, et `debut` = début de la
+>    cuisson + temps écoulé. L'app s'en sert pour décaler ces étapes quand la cuisson est déplacée.
 > 7. Indique dans `repas` quand chaque plat est mangé (dimanche soir → jeudi par défaut).
 
 ## Vue d'ensemble
@@ -154,12 +158,12 @@ Chaque étape :
 | `id` | id | Unique dans la session (`s1-01`…). |
 | `debut` | `h:mm` | Heure depuis le début. |
 | `poste` | liste | Plan de travail, feux, four, Cook Expert. |
-| `tache` | id, facultatif | Ligne du planning ; sans tâche, l'étape a sa propre ligne. |
+| `tache` | id, facultatif | Ligne du planning. Toutes les étapes d'une même préparation (mise au four, retourner, sortir) partagent la même tâche : quand on déplace une étape dans l'app, les étapes plus tardives de sa tâche suivent. Sans tâche, l'étape a sa propre ligne et n'est liée à rien. |
 | `actifMin` | entier ≥ 0 | Minutes de travail actif (barre bleue). |
 | `passifMin` | entier, facultatif | Cuisson qui tourne seule après la partie active (barre verte, minuteur de `actifMin + passifMin`). |
-| `rappelsMin` | entiers, facultatif | Rappels après le début de l'étape (remuer toutes les 10 min : `[10, 20, 30]`). |
+| `rappelsMin` | entiers, facultatif | Rappels répétés pendant l'étape (remuer toutes les 10 min : `[10, 20, 30]`). Pour une action distincte (sortir des œufs), préférer une étape séparée. |
 | `alerte` | booléen, facultatif | Action courte à ne pas rater (⚠, barre rouge). |
-| `texte` | texte | Consigne ; ingrédients en `**gras**`. |
+| `texte` | texte | Consigne ; ingrédients en `**gras**`. Pas d'heure dans le texte : une action à un autre moment = une autre étape. |
 | `details` | textes, facultatif | Sous-points (plaque 1, plaque 2…). |
 | `recettes` | ids, facultatif | Recettes concernées. |
 | `groupe` | id, facultatif | Étapes fusionnées : des étapes **consécutives** de même `groupe` s'affichent comme une seule carte, à l'heure de la première ; chacune garde ses durées et son minuteur. Donner la même heure aux membres. |

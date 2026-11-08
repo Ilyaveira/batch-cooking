@@ -861,3 +861,21 @@ textarea {
   font-size: 1rem;
   width: 100%;
 }
+
+/* Durées d'une étape (mode Réorganiser) */
+.durees {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.3rem 0;
+  font-size: 0.95rem;
+}
+.durees input {
+  width: 4.2rem;
+  text-align: center;
+}
+.fin-etape {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

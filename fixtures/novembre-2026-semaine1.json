@@ -1,0 +1,1375 @@
+{
+  "format": "batch-cooking-plan",
+  "version": 1,
+  "mois": "2026-11",
+  "titre": "Batch cooking – Novembre (semaine 1, exemple)",
+  "personnes": [
+    {
+      "id": "personne-a",
+      "nom": "Personne A"
+    },
+    {
+      "id": "personne-b",
+      "nom": "Personne B"
+    }
+  ],
+  "ingredients": [
+    {
+      "id": "butternut",
+      "nom": "Butternut",
+      "rayon": "fruits-legumes"
+    },
+    {
+      "id": "brocolis",
+      "nom": "Brocolis",
+      "rayon": "fruits-legumes"
+    },
+    {
+      "id": "oignon-rouge",
+      "nom": "Oignons rouges",
+      "rayon": "fruits-legumes"
+    },
+    {
+      "id": "carotte",
+      "nom": "Carottes",
+      "rayon": "fruits-legumes"
+    },
+    {
+      "id": "citron-jaune",
+      "nom": "Citrons jaunes",
+      "rayon": "fruits-legumes"
+    },
+    {
+      "id": "radis",
+      "nom": "Radis",
+      "rayon": "fruits-legumes"
+    },
+    {
+      "id": "endive",
+      "nom": "Endives",
+      "rayon": "fruits-legumes"
+    },
+    {
+      "id": "clementine",
+      "nom": "Clémentines",
+      "rayon": "fruits-legumes"
+    },
+    {
+      "id": "ciboulette",
+      "nom": "Ciboulette",
+      "rayon": "fruits-legumes",
+      "stockage": "frigo"
+    },
+    {
+      "id": "menthe",
+      "nom": "Menthe",
+      "rayon": "fruits-legumes",
+      "stockage": "frigo"
+    },
+    {
+      "id": "coriandre",
+      "nom": "Coriandre",
+      "rayon": "fruits-legumes",
+      "stockage": "frigo"
+    },
+    {
+      "id": "blanc-poulet",
+      "nom": "Blancs de poulet",
+      "rayon": "boucherie-poissonnerie"
+    },
+    {
+      "id": "feta",
+      "nom": "Feta",
+      "rayon": "cremerie"
+    },
+    {
+      "id": "oeuf",
+      "nom": "Œufs",
+      "rayon": "cremerie"
+    },
+    {
+      "id": "fromage-blanc",
+      "nom": "Fromage blanc",
+      "rayon": "cremerie"
+    },
+    {
+      "id": "yaourt-grec",
+      "nom": "Yaourt grec allégé",
+      "rayon": "cremerie"
+    },
+    {
+      "id": "cottage-cheese",
+      "nom": "Cottage cheese",
+      "rayon": "cremerie"
+    },
+    {
+      "id": "lentilles-vertes",
+      "nom": "Lentilles vertes",
+      "rayon": "epicerie"
+    },
+    {
+      "id": "pois-chiches",
+      "nom": "Pois chiches (boîte de 400 g)",
+      "rayon": "epicerie"
+    },
+    {
+      "id": "semoule-tipiak",
+      "nom": "Semoule parfumée Tipiak « épices du monde »",
+      "rayon": "epicerie"
+    },
+    {
+      "id": "tomates-sechees",
+      "nom": "Tomates séchées",
+      "rayon": "epicerie"
+    },
+    {
+      "id": "lait-coco",
+      "nom": "Lait de coco",
+      "rayon": "epicerie",
+      "stockage": "placard"
+    },
+    {
+      "id": "gingembre-poudre",
+      "nom": "Gingembre en poudre",
+      "rayon": "epicerie"
+    },
+    {
+      "id": "coriandre-poudre",
+      "nom": "Coriandre en poudre",
+      "rayon": "epicerie"
+    },
+    {
+      "id": "oignons-eminces-surgeles",
+      "nom": "Oignons émincés surgelés",
+      "rayon": "surgeles"
+    },
+    {
+      "id": "riz-basmati",
+      "nom": "Riz basmati",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "farine",
+      "nom": "Farine",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "levure-chimique",
+      "nom": "Levure chimique",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "fecule-mais",
+      "nom": "Fécule de maïs",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "huile-olive",
+      "nom": "Huile d'olive",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "huile-sesame",
+      "nom": "Huile de sésame",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "graines-sesame",
+      "nom": "Graines de sésame",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "sauce-soja",
+      "nom": "Sauce soja",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "sauce-poisson",
+      "nom": "Sauce poisson (nuoc-mâm)",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "vinaigre-vin-rouge",
+      "nom": "Vinaigre de vin rouge",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "vinaigre-riz",
+      "nom": "Vinaigre de riz",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "moutarde",
+      "nom": "Moutarde",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "miel",
+      "nom": "Miel",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "sucre",
+      "nom": "Sucre",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "tahini",
+      "nom": "Tahini",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "bouillon-volaille",
+      "nom": "Bouillon de volaille en cubes",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "ail-hache-surgele",
+      "nom": "Ail haché surgelé",
+      "rayon": "surgeles",
+      "placard": true
+    },
+    {
+      "id": "ail-poudre",
+      "nom": "Ail en poudre",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "cumin",
+      "nom": "Cumin",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "paprika",
+      "nom": "Paprika",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "curry",
+      "nom": "Curry",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "herbes-provence",
+      "nom": "Herbes de Provence",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "piment-flocons",
+      "nom": "Piment en flocons",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "muscade",
+      "nom": "Muscade",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "cannelle",
+      "nom": "Cannelle",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "sel",
+      "nom": "Sel",
+      "rayon": "epicerie",
+      "placard": true
+    },
+    {
+      "id": "poivre",
+      "nom": "Poivre",
+      "rayon": "epicerie",
+      "placard": true
+    }
+  ],
+  "recettes": [
+    {
+      "id": "salade-lentilles-butternut-feta",
+      "nom": "Salade de lentilles, butternut et feta",
+      "portions": 4,
+      "conservation": [
+        "plat-cuisine"
+      ],
+      "tags": {
+        "saisons": [
+          "automne",
+          "hiver"
+        ],
+        "vegetarien": true,
+        "feculents": [
+          "legumineuses"
+        ]
+      },
+      "ustensiles": [
+        "grande casserole",
+        "passoire",
+        "plaque et papier cuisson",
+        "saladier"
+      ],
+      "four": {
+        "temperatureC": 210,
+        "mode": "traditionnel"
+      },
+      "ingredients": [
+        {
+          "ingredient": "lentilles-vertes",
+          "quantite": 213.33,
+          "unite": "g",
+          "note": "⅔ des 320 g cuits pendant la session"
+        },
+        {
+          "ingredient": "butternut",
+          "quantite": 800,
+          "unite": "g",
+          "note": "épluchée, en cubes (plaque 1)"
+        },
+        {
+          "ingredient": "oignon-rouge",
+          "quantite": 1,
+          "unite": "piece"
+        },
+        {
+          "ingredient": "feta",
+          "quantite": 150,
+          "unite": "g"
+        },
+        {
+          "ingredient": "oeuf",
+          "quantite": 4,
+          "unite": "piece",
+          "note": "durs, servis en œufs mimosa"
+        },
+        {
+          "ingredient": "cottage-cheese",
+          "quantite": 60,
+          "unite": "g",
+          "note": "mixé, pour les œufs mimosa"
+        },
+        {
+          "ingredient": "huile-olive",
+          "quantite": 4,
+          "unite": "cas",
+          "note": "vinaigrette"
+        },
+        {
+          "ingredient": "vinaigre-vin-rouge",
+          "quantite": 4,
+          "unite": "cas"
+        },
+        {
+          "ingredient": "moutarde",
+          "quantite": 3,
+          "unite": "cac",
+          "note": "2 pour la vinaigrette, 1 pour les œufs mimosa"
+        },
+        {
+          "ingredient": "miel",
+          "quantite": 2,
+          "unite": "cac"
+        },
+        {
+          "ingredient": "cumin",
+          "quantite": null,
+          "unite": "pincee"
+        },
+        {
+          "ingredient": "paprika",
+          "quantite": null,
+          "unite": "pincee"
+        },
+        {
+          "ingredient": "ciboulette",
+          "quantite": null,
+          "unite": "botte",
+          "note": "œufs mimosa"
+        }
+      ],
+      "etapes": [
+        "Cuire les lentilles 25 min dans l'eau bouillante, les arrêter al dente.",
+        "Rôtir la butternut en cubes avec l'oignon rouge, huile, cumin et paprika, 30 min à 210 °C.",
+        "Mélanger lentilles, butternut, feta émiettée et vinaigrette.",
+        "Œufs mimosa : jaunes écrasés avec le cottage mixé, la moutarde, sel, poivre, ciboulette."
+      ]
+    },
+    {
+      "id": "sheet-pan-poulet-butternut",
+      "nom": "Sheet-pan poulet, butternut, brocolis et pois chiches",
+      "portions": 4,
+      "conservation": [
+        "plat-cuisine"
+      ],
+      "tags": {
+        "saisons": [
+          "automne",
+          "hiver"
+        ],
+        "vegetarien": false,
+        "feculents": [
+          "semoule",
+          "legumineuses"
+        ]
+      },
+      "ustensiles": [
+        "plaque et papier cuisson",
+        "petits bols"
+      ],
+      "four": {
+        "temperatureC": 210,
+        "mode": "traditionnel"
+      },
+      "ingredients": [
+        {
+          "ingredient": "blanc-poulet",
+          "quantite": 500,
+          "unite": "g",
+          "note": "en morceaux"
+        },
+        {
+          "ingredient": "butternut",
+          "quantite": 500,
+          "unite": "g",
+          "note": "épluchée, en cubes (plaque 2)"
+        },
+        {
+          "ingredient": "brocolis",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "ingredient": "oignon-rouge",
+          "quantite": 2,
+          "unite": "piece"
+        },
+        {
+          "ingredient": "pois-chiches",
+          "quantite": 1,
+          "unite": "boite"
+        },
+        {
+          "ingredient": "herbes-provence",
+          "quantite": null,
+          "unite": "pincee"
+        },
+        {
+          "ingredient": "huile-olive",
+          "quantite": null,
+          "unite": "cas"
+        },
+        {
+          "ingredient": "feta",
+          "quantite": 150,
+          "unite": "g"
+        },
+        {
+          "ingredient": "yaourt-grec",
+          "quantite": 200,
+          "unite": "g",
+          "note": "sauce yaourt-tahini, servie aussi avec les crudités"
+        },
+        {
+          "ingredient": "tahini",
+          "quantite": 20,
+          "unite": "g"
+        },
+        {
+          "ingredient": "citron-jaune",
+          "quantite": 1,
+          "unite": "piece",
+          "note": "jus, pour la sauce"
+        },
+        {
+          "ingredient": "semoule-tipiak",
+          "quantite": 240,
+          "unite": "g",
+          "note": "préparée le soir"
+        }
+      ],
+      "etapes": [
+        "Rôtir poulet, butternut, brocolis, oignons rouges et pois chiches aux herbes de Provence, 30 min à 210 °C, en une seule couche.",
+        "Sauce : yaourt grec, tahini, jus de citron, sel, un peu d'eau.",
+        "Le soir : semoule, 1 volume pour 1 volume d'eau bouillante, 5 min à couvert."
+      ]
+    },
+    {
+      "id": "oeufs-marines-coreens",
+      "nom": "Œufs marinés à la coréenne sur riz",
+      "portions": 2,
+      "conservation": [
+        "plat-cuisine",
+        "riz"
+      ],
+      "tags": {
+        "vegetarien": false,
+        "feculents": [
+          "riz"
+        ]
+      },
+      "ustensiles": [
+        "casserole moyenne",
+        "panier vapeur",
+        "pot pour la marinade",
+        "bol d'eau glacée"
+      ],
+      "ingredients": [
+        {
+          "ingredient": "oeuf",
+          "quantite": 4,
+          "unite": "piece",
+          "note": "mollets (6 min 30)"
+        },
+        {
+          "ingredient": "sauce-soja",
+          "quantite": 10,
+          "unite": "cl"
+        },
+        {
+          "ingredient": "huile-sesame",
+          "quantite": 1,
+          "unite": "cas"
+        },
+        {
+          "ingredient": "ail-hache-surgele",
+          "quantite": 1,
+          "unite": "gousse"
+        },
+        {
+          "ingredient": "miel",
+          "quantite": 1,
+          "unite": "cac"
+        },
+        {
+          "ingredient": "piment-flocons",
+          "quantite": null,
+          "unite": "pincee"
+        },
+        {
+          "ingredient": "riz-basmati",
+          "quantite": 120,
+          "unite": "g",
+          "note": "la moitié des 240 g cuits"
+        },
+        {
+          "ingredient": "blanc-poulet",
+          "quantite": 150,
+          "unite": "g"
+        },
+        {
+          "ingredient": "brocolis",
+          "quantite": 300,
+          "unite": "g",
+          "note": "vapeur, 5 min"
+        }
+      ]
+    },
+    {
+      "id": "cake-tomates-sechees-feta",
+      "nom": "Cake salé tomates séchées et feta",
+      "portions": 12,
+      "tags": {
+        "vegetarien": true
+      },
+      "ustensiles": [
+        "moule à cake",
+        "saladier"
+      ],
+      "four": {
+        "temperatureC": 180,
+        "mode": "traditionnel"
+      },
+      "durees": {
+        "cuissonMin": 35
+      },
+      "ingredients": [
+        {
+          "ingredient": "fromage-blanc",
+          "quantite": 200,
+          "unite": "g"
+        },
+        {
+          "ingredient": "oeuf",
+          "quantite": 3,
+          "unite": "piece"
+        },
+        {
+          "ingredient": "farine",
+          "quantite": 90,
+          "unite": "g"
+        },
+        {
+          "ingredient": "levure-chimique",
+          "quantite": 0.5,
+          "unite": "sachet"
+        },
+        {
+          "ingredient": "tomates-sechees",
+          "quantite": null,
+          "unite": "g",
+          "note": "le sachet sert aussi en semaine 4"
+        },
+        {
+          "ingredient": "feta",
+          "quantite": 100,
+          "unite": "g"
+        },
+        {
+          "ingredient": "ciboulette",
+          "quantite": null,
+          "unite": "botte"
+        }
+      ]
+    },
+    {
+      "id": "veloute-carotte-coco",
+      "nom": "Velouté carotte-coco-coriandre",
+      "portions": 2,
+      "conservation": [
+        "soupe"
+      ],
+      "tags": {
+        "saisons": [
+          "automne",
+          "hiver"
+        ],
+        "vegetarien": true
+      },
+      "ustensiles": [
+        "Cook Expert"
+      ],
+      "ingredients": [
+        {
+          "ingredient": "carotte",
+          "quantite": 265,
+          "unite": "g",
+          "note": "5 carottes, brossées"
+        },
+        {
+          "ingredient": "oignons-eminces-surgeles",
+          "quantite": 30,
+          "unite": "g"
+        },
+        {
+          "ingredient": "huile-olive",
+          "quantite": 1,
+          "unite": "cac"
+        },
+        {
+          "ingredient": "gingembre-poudre",
+          "quantite": 0.5,
+          "unite": "cac"
+        },
+        {
+          "ingredient": "coriandre-poudre",
+          "quantite": 0.5,
+          "unite": "cac"
+        },
+        {
+          "ingredient": "lait-coco",
+          "quantite": 9,
+          "unite": "cl"
+        },
+        {
+          "ingredient": "coriandre",
+          "quantite": null,
+          "unite": "botte"
+        }
+      ],
+      "etapes": [
+        "Trancher les carottes au disque éminceur, puis les mettre dans le bol avec l'oignon, l'huile, 10 cl d'eau, les épices et le sel.",
+        "Programme Expert, 25 min, 100 °C, vitesse 1.",
+        "Ajouter le lait de coco et la coriandre, mixer 1 min en montant jusqu'à la vitesse 18."
+      ]
+    },
+    {
+      "id": "crudites-apero",
+      "nom": "Crudités de l'apéro (radis, carottes, endives)",
+      "portions": 2,
+      "tags": {
+        "vegetarien": true
+      },
+      "ingredients": [
+        {
+          "ingredient": "radis",
+          "quantite": 1,
+          "unite": "botte"
+        },
+        {
+          "ingredient": "carotte",
+          "quantite": 3,
+          "unite": "piece"
+        },
+        {
+          "ingredient": "endive",
+          "quantite": 2,
+          "unite": "piece"
+        }
+      ]
+    },
+    {
+      "id": "mujaddara",
+      "nom": "Mujaddara",
+      "portions": 2,
+      "conservation": [
+        "riz",
+        "oeufs-durs"
+      ],
+      "tags": {
+        "vegetarien": true,
+        "feculents": [
+          "riz",
+          "legumineuses"
+        ]
+      },
+      "ustensiles": [
+        "sauteuse"
+      ],
+      "ingredients": [
+        {
+          "ingredient": "lentilles-vertes",
+          "quantite": 106.67,
+          "unite": "g",
+          "note": "⅓ des 320 g cuits pendant la session"
+        },
+        {
+          "ingredient": "riz-basmati",
+          "quantite": 120,
+          "unite": "g",
+          "note": "la moitié des 240 g cuits"
+        },
+        {
+          "ingredient": "oignons-eminces-surgeles",
+          "quantite": 300,
+          "unite": "g",
+          "note": "bien brunis à la sauteuse"
+        },
+        {
+          "ingredient": "huile-olive",
+          "quantite": 1,
+          "unite": "cas"
+        },
+        {
+          "ingredient": "cumin",
+          "quantite": 1,
+          "unite": "cac"
+        },
+        {
+          "ingredient": "oeuf",
+          "quantite": 2,
+          "unite": "piece",
+          "note": "durs"
+        },
+        {
+          "ingredient": "cottage-cheese",
+          "quantite": 100,
+          "unite": "g",
+          "note": "sauce cottage-citron-menthe"
+        },
+        {
+          "ingredient": "citron-jaune",
+          "quantite": 0.5,
+          "unite": "piece"
+        },
+        {
+          "ingredient": "ail-hache-surgele",
+          "quantite": 0.5,
+          "unite": "gousse"
+        },
+        {
+          "ingredient": "menthe",
+          "quantite": null,
+          "unite": "botte"
+        },
+        {
+          "ingredient": "coriandre",
+          "quantite": null,
+          "unite": "botte"
+        }
+      ]
+    }
+  ],
+  "semaines": [
+    {
+      "numero": 1,
+      "dateSession": "2026-11-08",
+      "titre": "Butternut, poulet, feta",
+      "plats": [
+        {
+          "recette": "salade-lentilles-butternut-feta",
+          "portions": 4,
+          "repas": [
+            {
+              "date": "2026-11-08",
+              "moment": "soir",
+              "aPreparer": "Œufs mimosa : coupe les 4 œufs durs en deux, écrase les jaunes avec 60 g de cottage mixé, 1 c. à c. de moutarde, sel, poivre, ciboulette ; remplis les blancs. Puis mélange ⅔ des lentilles, le butternut de la plaque 1, 150 g de feta et la vinaigrette ; la moitié en boîtes pour lundi midi.",
+              "aPreparerMin": 10
+            },
+            {
+              "date": "2026-11-09",
+              "moment": "midi"
+            }
+          ]
+        },
+        {
+          "recette": "oeufs-marines-coreens",
+          "portions": 2,
+          "repas": [
+            {
+              "date": "2026-11-09",
+              "moment": "soir"
+            }
+          ]
+        },
+        {
+          "recette": "sheet-pan-poulet-butternut",
+          "portions": 4,
+          "repas": [
+            {
+              "date": "2026-11-10",
+              "moment": "soir",
+              "aPreparer": "Semoule : 240 g de semoule Tipiak, autant d'eau bouillante, 5 min à couvert.",
+              "aPreparerMin": 5
+            },
+            {
+              "date": "2026-11-11",
+              "moment": "midi"
+            }
+          ]
+        },
+        {
+          "recette": "mujaddara",
+          "portions": 2,
+          "pour": [
+            "personne-a"
+          ],
+          "repas": [
+            {
+              "date": "2026-11-10",
+              "moment": "midi"
+            },
+            {
+              "date": "2026-11-12",
+              "moment": "midi"
+            }
+          ]
+        },
+        {
+          "recette": "cake-tomates-sechees-feta",
+          "portions": 12,
+          "repas": [
+            {
+              "date": "2026-11-11",
+              "moment": "soir"
+            }
+          ]
+        },
+        {
+          "recette": "veloute-carotte-coco",
+          "portions": 2,
+          "repas": [
+            {
+              "date": "2026-11-11",
+              "moment": "soir"
+            }
+          ]
+        },
+        {
+          "recette": "crudites-apero",
+          "portions": 2,
+          "repas": [
+            {
+              "date": "2026-11-11",
+              "moment": "soir",
+              "aPreparer": "Apéro : radis, 3 carottes et endives en bâtonnets ; réchauffe le velouté, tranche le cake.",
+              "aPreparerMin": 10
+            }
+          ]
+        }
+      ],
+      "coursesSupplementaires": [
+        {
+          "ingredient": "clementine",
+          "quantite": 1,
+          "unite": "kg",
+          "note": "dessert de l'apéro"
+        },
+        {
+          "ingredient": "ciboulette",
+          "quantite": 1,
+          "unite": "botte",
+          "note": "total de la semaine"
+        },
+        {
+          "ingredient": "menthe",
+          "quantite": 1,
+          "unite": "botte",
+          "note": "total de la semaine"
+        },
+        {
+          "ingredient": "coriandre",
+          "quantite": 1,
+          "unite": "botte",
+          "note": "total de la semaine"
+        },
+        {
+          "ingredient": "tomates-sechees",
+          "quantite": 1,
+          "unite": "sachet",
+          "note": "~110 g, sert aussi en semaine 4"
+        }
+      ],
+      "session": {
+        "dureeMin": 130,
+        "ustensiles": [
+          "2 plaques et papier cuisson",
+          "moule à cake",
+          "grande casserole",
+          "casserole moyenne",
+          "panier vapeur",
+          "sauteuse",
+          "passoire",
+          "saladier",
+          "bol d'eau glacée",
+          "petits bols",
+          "pot pour la marinade",
+          "économe",
+          "couteau",
+          "planche",
+          "Cook Expert",
+          "une quinzaine de boîtes"
+        ],
+        "taches": [
+          {
+            "id": "prep",
+            "libelle": "Four 210 °C, eau à bouillir"
+          },
+          {
+            "id": "lentilles",
+            "libelle": "Lentilles vertes (25 min)"
+          },
+          {
+            "id": "riz",
+            "libelle": "Riz basmati (12 min)"
+          },
+          {
+            "id": "butternut",
+            "libelle": "Éplucher, couper butternut"
+          },
+          {
+            "id": "decoupe",
+            "libelle": "Brocolis, oignons, poulet"
+          },
+          {
+            "id": "four",
+            "libelle": "2 plaques au four (30 min)"
+          },
+          {
+            "id": "oignons",
+            "libelle": "Oignons du mujaddara (poêle)"
+          },
+          {
+            "id": "oeufs",
+            "libelle": "10 œufs : mollets et durs"
+          },
+          {
+            "id": "brocolis",
+            "libelle": "Brocolis vapeur (5 min)"
+          },
+          {
+            "id": "marinade",
+            "libelle": "Écaler, marinade coréenne"
+          },
+          {
+            "id": "cake",
+            "libelle": "Cake : pâte, puis 35 min"
+          },
+          {
+            "id": "sauces",
+            "libelle": "Sauces et vinaigrette"
+          },
+          {
+            "id": "veloute",
+            "libelle": "Velouté carotte-coco"
+          },
+          {
+            "id": "boites",
+            "libelle": "Mise en boîtes"
+          }
+        ],
+        "etapes": [
+          {
+            "id": "s1-01",
+            "debut": "0:00",
+            "poste": "four",
+            "tache": "prep",
+            "actifMin": 0,
+            "texte": "Préchauffe à 210 °C."
+          },
+          {
+            "id": "s1-02",
+            "debut": "0:00",
+            "poste": "feux",
+            "tache": "prep",
+            "actifMin": 5,
+            "texte": "Grande casserole d'eau à bouillir."
+          },
+          {
+            "id": "s1-03",
+            "debut": "0:05",
+            "poste": "feux",
+            "tache": "lentilles",
+            "actifMin": 3,
+            "passifMin": 22,
+            "texte": "**320 g de lentilles vertes** rincées dans l'eau bouillante, 25 min.",
+            "recettes": [
+              "salade-lentilles-butternut-feta",
+              "mujaddara"
+            ]
+          },
+          {
+            "id": "s1-04",
+            "debut": "0:08",
+            "poste": "feux",
+            "tache": "riz",
+            "actifMin": 2,
+            "passifMin": 10,
+            "texte": "**240 g de riz basmati** rincé, casserole moyenne, 12 min.",
+            "recettes": [
+              "oeufs-marines-coreens",
+              "mujaddara"
+            ]
+          },
+          {
+            "id": "s1-05",
+            "debut": "0:12",
+            "poste": "plan-de-travail",
+            "tache": "butternut",
+            "actifMin": 30,
+            "texte": "Épluche les **2 butternuts**, coupe-les en cubes de 2 cm (~1,6 kg)."
+          },
+          {
+            "id": "s1-06",
+            "debut": "0:20",
+            "poste": "feux",
+            "tache": "riz",
+            "actifMin": 1,
+            "alerte": true,
+            "texte": "Riz : coupe le feu, étale-le sur une assiette."
+          },
+          {
+            "id": "s1-07",
+            "debut": "0:30",
+            "poste": "feux",
+            "tache": "lentilles",
+            "actifMin": 2,
+            "alerte": true,
+            "texte": "Lentilles : égoutte-les. Remets de l'eau à chauffer pour les œufs."
+          },
+          {
+            "id": "s1-08",
+            "debut": "0:42",
+            "poste": "plan-de-travail",
+            "tache": "decoupe",
+            "actifMin": 15,
+            "texte": "**500 g de brocolis** en petits bouquets, **3 oignons rouges** en quartiers, **650 g de poulet** en morceaux, **1 boîte de pois chiches** rincés."
+          },
+          {
+            "id": "s1-09",
+            "debut": "0:57",
+            "poste": "four",
+            "tache": "four",
+            "actifMin": 3,
+            "passifMin": 27,
+            "texte": "Deux plaques, 30 min, en une seule couche :",
+            "details": [
+              "Plaque 1 : **800 g de butternut**, **1 oignon rouge**, huile, sel, cumin, paprika.",
+              "Plaque 2 : le poulet, **500 g de butternut**, **200 g de brocolis**, **2 oignons rouges**, les pois chiches, huile, herbes de Provence."
+            ],
+            "recettes": [
+              "salade-lentilles-butternut-feta",
+              "sheet-pan-poulet-butternut"
+            ]
+          },
+          {
+            "id": "s1-10",
+            "debut": "1:00",
+            "poste": "feux",
+            "tache": "oignons",
+            "actifMin": 2,
+            "passifMin": 38,
+            "rappelsMin": [
+              10,
+              20,
+              30
+            ],
+            "texte": "Oignons du mujaddara : **300 g d'oignons surgelés**, 1 c. à s. d'huile, sel, à la sauteuse. 5 min à feu vif, puis feu moyen-doux. Remue toutes les 10 min.",
+            "recettes": [
+              "mujaddara"
+            ]
+          },
+          {
+            "id": "s1-11",
+            "debut": "1:02",
+            "poste": "feux",
+            "tache": "oeufs",
+            "actifMin": 1,
+            "passifMin": 9,
+            "rappelsMin": [
+              6,
+              10
+            ],
+            "texte": "**10 œufs** dans l'eau bouillante. À 1:08, sors-en 4 (mollets) dans l'eau glacée. À 1:12, sors les 6 autres (durs)."
+          },
+          {
+            "id": "s1-12",
+            "debut": "1:13",
+            "poste": "four",
+            "tache": "four",
+            "actifMin": 2,
+            "alerte": true,
+            "texte": "Retourne les légumes des plaques."
+          },
+          {
+            "id": "s1-13",
+            "debut": "1:13",
+            "poste": "feux",
+            "tache": "brocolis",
+            "actifMin": 1,
+            "passifMin": 5,
+            "rappelsMin": [
+              6
+            ],
+            "texte": "**300 g de brocolis** à la vapeur, 5 min.",
+            "recettes": [
+              "oeufs-marines-coreens"
+            ]
+          },
+          {
+            "id": "s1-14",
+            "debut": "1:15",
+            "poste": "plan-de-travail",
+            "tache": "marinade",
+            "actifMin": 10,
+            "texte": "Écale les œufs. Marinade : **10 cl de sauce soja**, 5 cl d'eau, **1 c. à s. d'huile de sésame**, ail (1 gousse), 1 c. à c. de miel, piment. Les 4 œufs mollets dedans, au frigo.",
+            "recettes": [
+              "oeufs-marines-coreens"
+            ]
+          },
+          {
+            "id": "s1-15",
+            "debut": "1:27",
+            "poste": "four",
+            "tache": "four",
+            "actifMin": 2,
+            "alerte": true,
+            "texte": "Sors les plaques, baisse à 180 °C."
+          },
+          {
+            "id": "s1-16",
+            "debut": "1:27",
+            "poste": "plan-de-travail",
+            "tache": "cake",
+            "actifMin": 8,
+            "texte": "Pâte à cake : **200 g de fromage blanc**, **3 œufs**, **90 g de farine**, ½ sachet de levure, sel, poivre, **tomates séchées**, **100 g de feta**, ciboulette.",
+            "recettes": [
+              "cake-tomates-sechees-feta"
+            ]
+          },
+          {
+            "id": "s1-17",
+            "debut": "1:35",
+            "poste": "four",
+            "tache": "cake",
+            "actifMin": 0,
+            "passifMin": 35,
+            "texte": "Enfourne le cake, 35 min.",
+            "recettes": [
+              "cake-tomates-sechees-feta"
+            ]
+          },
+          {
+            "id": "s1-18",
+            "debut": "1:35",
+            "poste": "plan-de-travail",
+            "tache": "sauces",
+            "actifMin": 10,
+            "texte": "Sauces :",
+            "details": [
+              "Yaourt-tahini : **200 g de yaourt grec**, **20 g de tahini**, jus d'1 citron, sel, un peu d'eau.",
+              "Vinaigrette : 4 c. à s. d'huile d'olive, 4 c. à s. de vinaigre de vin rouge, 2 c. à c. de moutarde, 2 c. à c. de miel.",
+              "Cottage : **100 g de cottage cheese** mixés 30 s au Cook Expert, jus d'½ citron, ail (½ gousse), sel, menthe."
+            ]
+          },
+          {
+            "id": "s1-19",
+            "debut": "1:40",
+            "poste": "feux",
+            "tache": "oignons",
+            "actifMin": 1,
+            "alerte": true,
+            "texte": "Oignons bien bruns : coupe le feu."
+          },
+          {
+            "id": "s1-20",
+            "debut": "1:45",
+            "poste": "cook-expert",
+            "tache": "veloute",
+            "actifMin": 5,
+            "passifMin": 20,
+            "texte": "Velouté : rince le bol, tranche **265 g de carottes** brossées au disque éminceur, puis mets-les dans le bol avec **30 g d'oignon surgelé**, 1 c. à c. d'huile, 10 cl d'eau, ½ c. à c. de gingembre et ½ c. à c. de coriandre en poudre, sel. Programme Expert, 25 min, 100 °C, vitesse 1.",
+            "recettes": [
+              "veloute-carotte-coco"
+            ]
+          },
+          {
+            "id": "s1-21",
+            "debut": "1:50",
+            "poste": "plan-de-travail",
+            "tache": "boites",
+            "actifMin": 20,
+            "texte": "Mise en boîtes :",
+            "details": [
+              "Salade, pour ce soir : ⅔ des lentilles, le butternut de la plaque 1, **150 g de feta**, la vinaigrette ; les 4 œufs durs à part, pour les œufs mimosa.",
+              "Sheet-pan : la plaque 2 moins 150 g de poulet, **150 g de feta**, sauce à part.",
+              "Œufs marinés : la moitié du riz, les 150 g de poulet, les brocolis vapeur.",
+              "Mujaddara : ⅓ des lentilles, l'autre moitié du riz, ⅔ des oignons, 1 c. à c. de cumin, **2 œufs durs** ; le reste des oignons par-dessus."
+            ]
+          },
+          {
+            "id": "s1-22",
+            "debut": "2:10",
+            "poste": "four",
+            "tache": "cake",
+            "actifMin": 2,
+            "alerte": true,
+            "texte": "Sors le cake, laisse-le refroidir."
+          },
+          {
+            "id": "s1-23",
+            "debut": "2:10",
+            "poste": "cook-expert",
+            "tache": "veloute",
+            "actifMin": 2,
+            "alerte": true,
+            "texte": "Velouté : **9 cl de lait de coco** et la coriandre, mixe 1 min en montant jusqu'à la vitesse 18."
+          }
+        ]
+      }
+    }
+  ],
+  "placard": [
+    {
+      "ingredient": "riz-basmati",
+      "quantite": 1.25,
+      "unite": "kg",
+      "note": "sur le mois"
+    },
+    {
+      "ingredient": "farine",
+      "quantite": 200,
+      "unite": "g"
+    },
+    {
+      "ingredient": "levure-chimique",
+      "quantite": 1,
+      "unite": "sachet"
+    },
+    {
+      "ingredient": "fecule-mais"
+    },
+    {
+      "ingredient": "huile-olive"
+    },
+    {
+      "ingredient": "huile-sesame"
+    },
+    {
+      "ingredient": "graines-sesame"
+    },
+    {
+      "ingredient": "sauce-soja"
+    },
+    {
+      "ingredient": "sauce-poisson"
+    },
+    {
+      "ingredient": "vinaigre-vin-rouge"
+    },
+    {
+      "ingredient": "vinaigre-riz"
+    },
+    {
+      "ingredient": "moutarde"
+    },
+    {
+      "ingredient": "miel"
+    },
+    {
+      "ingredient": "sucre"
+    },
+    {
+      "ingredient": "tahini",
+      "quantite": 1,
+      "unite": "pot"
+    },
+    {
+      "ingredient": "bouillon-volaille"
+    },
+    {
+      "ingredient": "ail-hache-surgele"
+    },
+    {
+      "ingredient": "ail-poudre"
+    },
+    {
+      "ingredient": "cumin"
+    },
+    {
+      "ingredient": "paprika"
+    },
+    {
+      "ingredient": "curry"
+    },
+    {
+      "ingredient": "herbes-provence"
+    },
+    {
+      "ingredient": "piment-flocons"
+    },
+    {
+      "ingredient": "muscade"
+    },
+    {
+      "ingredient": "cannelle",
+      "note": "facultatif"
+    },
+    {
+      "ingredient": "sel"
+    },
+    {
+      "ingredient": "poivre"
+    }
+  ]
+}

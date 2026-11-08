@@ -1,0 +1,713 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "format": {
+      "type": "string",
+      "const": "batch-cooking-plan"
+    },
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "mois": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])$"
+    },
+    "titre": {
+      "type": "string",
+      "minLength": 1
+    },
+    "personnes": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "nom": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "nom"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Les personnes du foyer."
+    },
+    "ingredients": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "Identifiant unique de l’ingrédient, réutilisé dans les recettes."
+          },
+          "nom": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Nom affiché, au singulier ou tel qu’acheté (ex. « Lentilles vertes »)."
+          },
+          "rayon": {
+            "type": "string",
+            "enum": [
+              "fruits-legumes",
+              "boucherie-poissonnerie",
+              "cremerie",
+              "epicerie",
+              "surgeles",
+              "autre"
+            ],
+            "description": "Rayon du magasin, pour trier la liste de courses."
+          },
+          "stockage": {
+            "description": "Où il est rangé à la maison (« à sortir »). Par défaut déduit du rayon.",
+            "type": "string",
+            "enum": [
+              "frigo",
+              "congelateur",
+              "legumes",
+              "placard"
+            ]
+          },
+          "placard": {
+            "description": "true = produit de fond de placard (épices, huiles…) : vérifié une fois par mois, absent des courses hebdomadaires.",
+            "type": "boolean"
+          },
+          "ciqual": {
+            "description": "Code de l’aliment dans la table Ciqual de l’ANSES (aliment cru ou cuit selon l’état pesé).",
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "pattern": "^\\d+$"
+              }
+            },
+            "required": [
+              "code"
+            ],
+            "additionalProperties": false
+          },
+          "off": {
+            "description": "Code-barres Open Food Facts pour un produit de marque.",
+            "type": "object",
+            "properties": {
+              "codeBarres": {
+                "type": "string",
+                "pattern": "^\\d{8,14}$"
+              }
+            },
+            "required": [
+              "codeBarres"
+            ],
+            "additionalProperties": false
+          },
+          "masseParUnite": {
+            "description": "Masse en grammes d’une unité non massique (ex. {\"piece\": 60} pour un œuf), si elle est connue. Sert au calcul nutritionnel ; ne jamais l’inventer.",
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "enum": [
+                "g",
+                "kg",
+                "ml",
+                "cl",
+                "l",
+                "piece",
+                "botte",
+                "gousse",
+                "tranche",
+                "sachet",
+                "boite",
+                "pot",
+                "cas",
+                "cac",
+                "pincee"
+              ]
+            },
+            "additionalProperties": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "required": [
+          "id",
+          "nom",
+          "rayon"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "recettes": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "nom": {
+            "type": "string",
+            "minLength": 1
+          },
+          "portions": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Nombre de portions pour lesquelles les quantités sont écrites."
+          },
+          "conservation": {
+            "description": "Clés des types de conservation (réglages de l’app) : « plat-cuisine », « soupe », « quiche », « oeufs-durs », « pates », « riz », « poisson-cru »… Le plus court s’applique.",
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+            }
+          },
+          "tags": {
+            "type": "object",
+            "properties": {
+              "saisons": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "printemps",
+                    "ete",
+                    "automne",
+                    "hiver"
+                  ]
+                }
+              },
+              "vegetarien": {
+                "type": "boolean"
+              },
+              "feculents": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "riz",
+                    "pates",
+                    "semoule",
+                    "legumineuses",
+                    "pommes-de-terre",
+                    "pain",
+                    "autre"
+                  ]
+                }
+              },
+              "libres": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "durees": {
+            "type": "object",
+            "properties": {
+              "preparationMin": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "cuissonMin": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "additionalProperties": false
+          },
+          "ustensiles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "four": {
+            "type": "object",
+            "properties": {
+              "temperatureC": {
+                "type": "integer",
+                "minimum": 30,
+                "maximum": 300
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "traditionnel",
+                  "chaleur-tournante"
+                ],
+                "description": "Mode pour lequel la température est écrite."
+              }
+            },
+            "required": [
+              "temperatureC",
+              "mode"
+            ],
+            "additionalProperties": false
+          },
+          "ingredients": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ingredient": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                  "description": "id d’un élément de « ingredients »."
+                },
+                "quantite": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Quantité positive dans l’unité indiquée ; null si la source ne la précise pas (ne pas estimer)."
+                },
+                "unite": {
+                  "type": "string",
+                  "enum": [
+                    "g",
+                    "kg",
+                    "ml",
+                    "cl",
+                    "l",
+                    "piece",
+                    "botte",
+                    "gousse",
+                    "tranche",
+                    "sachet",
+                    "boite",
+                    "pot",
+                    "cas",
+                    "cac",
+                    "pincee"
+                  ]
+                },
+                "note": {
+                  "description": "Précision libre (« en cubes de 2 cm », « durs »…).",
+                  "type": "string"
+                },
+                "facultatif": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "ingredient",
+                "quantite",
+                "unite"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "etapes": {
+            "description": "Étapes de la recette seule (hors session), dans l’ordre.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "source": {
+            "description": "Origine de la recette (lien, livre…).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "nom",
+          "portions",
+          "ingredients"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "semaines": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "numero": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 6
+          },
+          "dateSession": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "Date du dimanche de session."
+          },
+          "titre": {
+            "type": "string"
+          },
+          "plats": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "recette": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                  "description": "id d’une recette de « recettes »."
+                },
+                "portions": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "Portions cuisinées cette semaine (les quantités de la recette sont mises à l’échelle)."
+                },
+                "pour": {
+                  "description": "ids de « personnes » qui mangent ce plat ; par défaut, tout le monde.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                  }
+                },
+                "repas": {
+                  "description": "Quand le plat est mangé. Deux repas ou plus = plat « en double ».",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "date": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                      },
+                      "moment": {
+                        "type": "string",
+                        "enum": [
+                          "midi",
+                          "soir"
+                        ]
+                      },
+                      "portions": {
+                        "description": "Portions mangées à ce repas ; par défaut, le nombre de personnes concernées.",
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "pour": {
+                        "description": "ids de « personnes » ; par défaut celles du plat.",
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                        }
+                      },
+                      "aPreparer": {
+                        "description": "Ce qui se fait à la minute ce jour-là (assembler, cuire la semoule…).",
+                        "type": "string"
+                      },
+                      "aPreparerMin": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "date",
+                      "moment"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "recette",
+                "portions"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "coursesSupplementaires": {
+            "description": "Achats hors recettes (fruits du dessert…).",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ingredient": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                },
+                "quantite": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Quantité positive dans l’unité indiquée ; null si la source ne la précise pas (ne pas estimer)."
+                },
+                "unite": {
+                  "type": "string",
+                  "enum": [
+                    "g",
+                    "kg",
+                    "ml",
+                    "cl",
+                    "l",
+                    "piece",
+                    "botte",
+                    "gousse",
+                    "tranche",
+                    "sachet",
+                    "boite",
+                    "pot",
+                    "cas",
+                    "cac",
+                    "pincee"
+                  ]
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ingredient",
+                "quantite",
+                "unite"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "session": {
+            "type": "object",
+            "properties": {
+              "dureeMin": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "modeFour": {
+                "description": "Mode de four pour lequel les températures des étapes sont écrites (par défaut : traditionnel).",
+                "type": "string",
+                "enum": [
+                  "traditionnel",
+                  "chaleur-tournante"
+                ]
+              },
+              "ustensiles": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "taches": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                    },
+                    "libelle": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "libelle"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "etapes": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                    },
+                    "debut": {
+                      "type": "string",
+                      "pattern": "^\\d{1,2}:[0-5]\\d$"
+                    },
+                    "poste": {
+                      "type": "string",
+                      "enum": [
+                        "plan-de-travail",
+                        "feux",
+                        "four",
+                        "cook-expert"
+                      ]
+                    },
+                    "tache": {
+                      "description": "id d’une « tache » de la session : ligne du planning (Gantt).",
+                      "type": "string",
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                    },
+                    "actifMin": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991,
+                      "description": "Minutes de travail actif."
+                    },
+                    "passifMin": {
+                      "description": "Minutes de cuisson passive qui suivent la partie active (sert aux minuteurs).",
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "rappelsMin": {
+                      "description": "Rappels en minutes après le début de l’étape (ex. remuer toutes les 10 min : [10, 20, 30]).",
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "alerte": {
+                      "description": "true = action courte à ne pas rater (couper le feu, égoutter…).",
+                      "type": "boolean"
+                    },
+                    "texte": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Consigne courte. Seul le gras **…** est interprété (ingrédients et quantités)."
+                    },
+                    "details": {
+                      "description": "Sous-points (plaque 1, plaque 2…).",
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "recettes": {
+                      "description": "ids des recettes concernées.",
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "debut",
+                    "poste",
+                    "actifMin",
+                    "texte"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "etapes"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "numero",
+          "dateSession",
+          "plats"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "placard": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ingredient": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+          },
+          "quantite": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quantité positive dans l’unité indiquée ; null si la source ne la précise pas (ne pas estimer)."
+          },
+          "unite": {
+            "type": "string",
+            "enum": [
+              "g",
+              "kg",
+              "ml",
+              "cl",
+              "l",
+              "piece",
+              "botte",
+              "gousse",
+              "tranche",
+              "sachet",
+              "boite",
+              "pot",
+              "cas",
+              "cac",
+              "pincee"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ingredient"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "format",
+    "version",
+    "mois",
+    "titre",
+    "personnes",
+    "ingredients",
+    "recettes",
+    "semaines"
+  ],
+  "additionalProperties": false,
+  "title": "Plan mensuel de batch cooking (v1)",
+  "description": "Format d’échange importé par l’application Batch cooking. Voir SCHEMA.md."
+}

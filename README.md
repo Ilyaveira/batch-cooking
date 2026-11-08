@@ -1,0 +1,153 @@
+# Batch cooking
+
+Application mobile (PWA) en français pour préparer et suivre un plan mensuel de batch cooking à
+deux : menu, quand manger quoi, courses par rayon, placard du mois, déroulé de la session du
+dimanche et mode cuisine. Le plan est généré chaque mois par Claude au format décrit dans
+[`SCHEMA.md`](SCHEMA.md), puis importé dans l'app. Tout fonctionne hors ligne, sans compte ; les
+données restent sur le téléphone.
+
+## Installer l'app sur un téléphone Android
+
+1. Ouvrir l'adresse de l'app dans **Chrome** (après déploiement : `https://<compte>.github.io/<dépôt>/`).
+2. Menu ⋮ → **Installer l'application** (ou « Ajouter à l'écran d'accueil »).
+3. Ouvrir l'app depuis l'icône : elle fonctionne ensuite en mode avion.
+
+Sur iPhone : Safari → Partager → **Sur l'écran d'accueil**. L'écran ne reste allumé en mode
+cuisine qu'à partir d'iOS 18.4 ([données de compatibilité](https://web-platform-dx.github.io/web-features-explorer/features/screen-wake-lock)).
+Une app non installée peut voir ses données effacées par Safari après quelques jours sans visite :
+installez-la, et utilisez **Réglages → Exporter une sauvegarde** de temps en temps.
+
+## Utilisation chaque mois
+
+1. Dans claude.ai, préparer le plan avec la skill `plan-batch-cooking`, en joignant `SCHEMA.md`
+   (texte à reporter dans la skill : [`docs/mise-a-jour-skill.md`](docs/mise-a-jour-skill.md)).
+2. Récupérer le fichier `.json` produit par Claude sur le téléphone.
+3. Dans l'app : **Réglages → Importer un plan** (ou depuis l'accueil). L'app vérifie le fichier et
+   liste les erreurs avec leur emplacement (`semaines[1].plats[2].recette : …`) : il suffit de les
+   renvoyer à Claude pour qu'il corrige.
+4. À la première importation, renseigner dans **Réglages** les aliments exclus de chaque personne
+   et vérifier les durées de conservation.
+
+Réimporter le plan d'un mois le remplace ; les cases cochées, les réglages et la bibliothèque sont
+conservés.
+
+## Ce que fait l'app (MVP)
+
+| Écran | Contenu |
+|---|---|
+| Plan | Semaines du mois, plats, portions, plats « en double », alertes (aliments exclus, repas hors délai). |
+| Repas | « Quand manger quoi » du dimanche soir au jeudi (réglable), avec J+n et un statut de conservation par repas. |
+| Courses | Quantités agrégées par ingrédient, triées par rayon, à cocher ; détail par recette. |
+| Placard | Liste mensuelle à vérifier, avec ce que les recettes du mois en utilisent. |
+| Session | « À sortir » (frigo, congélateur, légumes, placard, ustensiles) et étapes horodatées par tranches de 30 min, poste en couleur, ingrédients en gras. |
+| Mode cuisine | Gros texte, écran maintenu allumé (Screen Wake Lock), minuteurs avec rappels (vibration + bip), étapes à cocher, chrono de session. |
+| Recettes | Bibliothèque (recherche, filtres végétarien / féculent / saison), fiche avec portions ajustables. |
+| Réglages | Personnes et aliments exclus, durées de conservation (avec leur source), four (chaleur tournante, écart), Cook Expert, sauvegarde. |
+
+### Règles de calcul (aucune valeur inventée)
+
+- **Portions** : quantité × portions voulues / portions de la recette. Arrondi à l'affichage
+  seulement (5 g au-delà de 100 g, ¼ de pièce, ½ cl…).
+- **Courses** : somme par ingrédient au sein d'une même famille d'unités (masse g/kg, volume
+  ml/cl/l, ou unité comptée identique). Des unités de familles différentes restent sur des lignes
+  séparées. Une quantité absente du plan est affichée « quantité non précisée », jamais estimée.
+- **Conservation** : J0 = jour de session. Vert jusqu'à la borne basse, orange entre les bornes,
+  rouge au-delà ; si une recette a plusieurs types, le plus court s'applique ; sans type, « durée
+  non renseignée ». Les valeurs par défaut reprennent celles citées dans le plan de novembre, avec
+  leur source affichée ; elles se modifient dans les réglages.
+- **Four** : les températures des étapes du poste Four sont annotées pour le mode de votre four
+  (écart réglable, 20 °C par défaut). Les températures du Cook Expert ne sont pas touchées.
+
+## Développement
+
+Prérequis : Node.js 22.
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+```bash
+npm test
+```
+
+```bash
+npm run build
+```
+
+```bash
+npm run valider -- fixtures/novembre-2026-semaine1.json
+```
+
+- `npm run build` régénère `public/schema/plan-v1.schema.json`, vérifie les types et produit `dist/`.
+- `npm run valider -- <fichier>` vérifie un plan en ligne de commande.
+- Parcours de bout en bout sur mobile émulé : voir l'en-tête de `tests/e2e/parcours-mobile.cjs`.
+- Icônes : `node scripts/generer-icones.mjs` (Playwright requis).
+
+### Structure du projet
+
+```text
+src/
+├─ domain/            Logique pure, sans React, entièrement testée
+│  ├─ schema/         Schéma Zod du plan (source unique), validation FR, avertissements
+│  ├─ constantes.ts   Listes fermées : rayons, unités, postes, stockages…
+│  ├─ unites.ts       Familles d'unités et affichage des quantités
+│  ├─ portions.ts     Mise à l'échelle
+│  ├─ courses.ts      Agrégation des courses et placard du mois
+│  ├─ session.ts      À sortir, étapes, Gantt (couloirs/segments), minuteurs
+│  ├─ calendrier.ts   Quand manger quoi et statuts de conservation
+│  ├─ exclusions.ts   Aliments exclus par personne
+│  └─ reglages.ts     Réglages par défaut sourcés, températures du four
+├─ data/              IndexedDB (Dexie) et fonctions d'accès (import, cases cochées, sauvegarde)
+├─ features/          Écrans (Accueil, Importer, Courses, Session, Cuisine, Recettes, Réglages…)
+├─ ui/                Composants communs et minuteurs
+└─ app/               Routage (hash), mise en page, hooks
+scripts/              Génération du JSON Schema, validation en ligne de commande, icônes
+fixtures/             Exemple : semaine 1 de novembre 2026 convertie au format v1
+tests/e2e/            Parcours mobile Playwright
+```
+
+### Choix techniques
+
+React 19 + TypeScript strict + Vite ; PWA via `vite-plugin-pwa` (tout est pré-caché) ;
+IndexedDB via Dexie ; validation et JSON Schema via Zod 4 ; routage par hash (compatible GitHub
+Pages) ; CSS natif avec variables (clair/sombre, contrastes AA, cibles tactiles ≥ 44 px) ; Vitest.
+
+Chaque enregistrement local porte `majLe`, `appareil` et peut porter `supprimeLe` : la
+synchronisation entre deux téléphones pourra fusionner enregistrement par enregistrement.
+
+## Déploiement (GitHub Pages)
+
+Le workflow `.github/workflows/deploy.yml` teste, construit et publie l'app à chaque push sur
+`main`. Dans le dépôt GitHub : **Settings → Pages → Source : GitHub Actions**.
+
+## Feuille de route
+
+- **Itération 2** : vue Gantt de la session ; notation des recettes (facilité et goût de 1 à 5 par
+  personne, commentaire, date ; tri et filtre).
+- **Itération 3** : nutrition par portion depuis la table Ciqual de l'ANSES (kcal, protéines,
+  lipides, AGS, glucides, fibres, sel ; source affichée ; ingrédients non trouvés signalés) ;
+  profil et objectifs journaliers.
+- **Itération 4** : Open Food Facts pour les produits de marque ; composer un plan dans l'app ;
+  proposition automatique du calendrier.
+- **Itération 5** : synchronisation entre les deux téléphones.
+
+## Limites connues
+
+- Les quantités de la fixture de novembre suivent le document source : quand il ne donne qu'un
+  total (herbes, tomates séchées), la ligne de recette est `null` et le total est en courses
+  supplémentaires. La butternut est pesée épluchée dans les étapes (1,3 kg) alors que les courses
+  du document indiquent « 2 moyennes (~2 kg) » : l'écart vient de la source.
+- Écran allumé : dépend du navigateur (voir plus haut pour iOS).
+- `npm audit` signale des vulnérabilités modérées dans des dépendances de **build** de
+  `vite-plugin-pwa` (glob/minimatch de workbox-build) ; elles ne sont pas incluses dans l'app.
+
+## Sources
+
+- Durées de conservation par défaut : [FoodSafety.gov — Cold Food Storage Chart](https://www.foodsafety.gov/food-safety-charts/cold-food-storage-charts),
+  [NSW Food Authority — Leftovers](https://www.foodauthority.nsw.gov.au/node/23948),
+  [Food Standards Scotland — Food storage](https://www.foodstandards.gov.scot/consumer-advice/food-safety/food-safety-in-the-kitchen/food-storage).
+- Table Ciqual (itération 3) : [ANSES — Ciqual](https://ciqual.anses.fr).

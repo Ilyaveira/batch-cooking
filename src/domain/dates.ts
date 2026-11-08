@@ -48,3 +48,10 @@ export function minutesDepuisDebut(heure: string): number {
 export function formaterHeureSession(minutes: number): string {
   return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
 }
+
+/** Heure d'horloge d'une étape : « 14:30 » + « 0:05 » → « 14:35 » (passage de minuit géré). */
+export function heureHorloge(debut: string, decalage: string): string {
+  const [h, m] = debut.split(':').map(Number) as [number, number];
+  const total = (((h * 60 + m + minutesDepuisDebut(decalage)) % 1440) + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}

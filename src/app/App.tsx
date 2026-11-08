@@ -11,7 +11,8 @@ import { Reglages } from '../features/Reglages';
 import { SemaineRepas } from '../features/SemaineRepas';
 import { Session } from '../features/Session';
 import { AucunPlan, EnChargement } from '../ui/composants';
-import { semaineCourante, usePlanActif } from './hooks';
+import { appliquerPersonnalisation } from '../domain/reorganisation';
+import { semaineCourante, usePersonnalisation, usePlanActif } from './hooks';
 
 function Layout() {
   return (
@@ -52,14 +53,17 @@ function VersSemaineCourante({ vue }: { vue: 'courses' | 'session' }) {
 function AvecSemaine({ vue }: { vue: 'repas' | 'courses' | 'session' | 'cuisine' }) {
   const { n } = useParams();
   const { plan } = usePlanActif();
-  if (plan === undefined) return <EnChargement />;
+  const perso = usePersonnalisation(plan?.mois, Number(n));
+  if (plan === undefined || perso === undefined) return <EnChargement />;
   if (plan === null) return <AucunPlan />;
   const semaine = plan.semaines.find((s) => s.numero === Number(n));
   if (!semaine) return <Navigate replace to="/" />;
+  // Session telle qu'affichée : ordre et heures modifiés dans l'app (le plan importé reste intact).
+  const affichee = semaine.session ? { ...semaine, session: appliquerPersonnalisation(semaine.session, perso) } : semaine;
   if (vue === 'repas') return <SemaineRepas plan={plan} semaine={semaine} />;
   if (vue === 'courses') return <Courses plan={plan} semaine={semaine} />;
-  if (vue === 'session') return <Session plan={plan} semaine={semaine} />;
-  return <Cuisine plan={plan} semaine={semaine} />;
+  if (vue === 'session') return <Session plan={plan} semaine={affichee} origine={semaine.session} modifiee={perso !== null} />;
+  return <Cuisine plan={plan} semaine={affichee} />;
 }
 
 export function App() {

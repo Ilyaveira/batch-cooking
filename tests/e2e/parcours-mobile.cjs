@@ -49,7 +49,7 @@ fs.mkdirSync(OUT, { recursive: true });
   await page.getByText('0:30 – 1:00').scrollIntoViewIfNeeded();
   await shot('07-etapes');
   await page.getByRole('link', { name: 'Passer en mode cuisine' }).click();
-  await page.getByRole('button', { name: 'Démarrer la session' }).click();
+  await page.getByRole('button', { name: 'Démarrer maintenant' }).click();
   await page.getByRole('button', { name: /Minuteur 25 min/ }).first().click();
   await page.getByLabel('Étape 0:00 faite').first().click();
   await page.waitForFunction(() => document.querySelector('input[aria-label="Étape 0:00 faite"]').checked, null, { timeout: 3000 });

@@ -1,11 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { fixturePlan } from '../domain/test-utils';
+import Dexie from 'dexie';
 import { BaseBatch } from './db';
 import {
   cles,
   cocher,
   cochagesAvecPrefixe,
+  enregistrerPersonnalisation,
   enregistrerReglages,
+  lirePersonnalisation,
+  personnalisationsDuMois,
   exporterSauvegarde,
   importerPlan,
   lireReglages,
@@ -69,5 +73,43 @@ describe('dépôt', () => {
 
   it('refuse un fichier qui n’est pas une sauvegarde', async () => {
     await expect(restaurerSauvegarde({ format: 'autre' } as never, base)).rejects.toThrow(/pas une sauvegarde/);
+  });
+
+  it('garde l’ordre modifié au réimport, l’efface avec le plan, et le sauvegarde', async () => {
+    const perso = { ordre: ['s1-02', 's1-01'], heures: { 's1-01': '0:01' } };
+    await importerPlan(fixturePlan(), base);
+    await enregistrerPersonnalisation('2026-11', 1, perso, base);
+    await importerPlan(fixturePlan(), base);
+    expect(await lirePersonnalisation('2026-11', 1, base)).toEqual(perso);
+    expect((await personnalisationsDuMois('2026-11', base)).get(1)).toEqual(perso);
+
+    const s = JSON.parse(JSON.stringify(await exporterSauvegarde(base)));
+    const autre = new BaseBatch(`test-${Math.random()}`);
+    await restaurerSauvegarde(s, autre);
+    expect(await lirePersonnalisation('2026-11', 1, autre)).toEqual(perso);
+    // Une sauvegarde d'avant la fonctionnalité (sans le champ) reste restaurable.
+    delete s.personnalisations;
+    await restaurerSauvegarde(s, autre);
+    expect(await lirePersonnalisation('2026-11', 1, autre)).toBeNull();
+    await autre.delete();
+
+    await enregistrerPersonnalisation('2026-11', 1, null, base);
+    expect(await lirePersonnalisation('2026-11', 1, base)).toBeNull();
+    await enregistrerPersonnalisation('2026-11', 1, perso, base);
+    await supprimerPlan('2026-11', base);
+    expect(await lirePersonnalisation('2026-11', 1, base)).toBeNull();
+  });
+
+  it('migre une base v1 (déjà installée sur un téléphone) sans perdre le plan', async () => {
+    const nom = `test-v1-${Math.random()}`;
+    const v1 = new Dexie(nom);
+    v1.version(1).stores({ plans: 'id, majLe', recettes: 'id, majLe, moisOrigine', cochages: 'cle, majLe', reglages: 'cle' });
+    await v1.table('plans').put({ id: '2026-11', plan: fixturePlan(), importeLe: 1, majLe: 1, appareil: 'x' });
+    v1.close();
+    const v2 = new BaseBatch(nom);
+    expect((await listerPlans(v2)).map((p) => p.id)).toEqual(['2026-11']);
+    await enregistrerPersonnalisation('2026-11', 1, { ordre: ['s1-01'], heures: {} }, v2);
+    expect(await lirePersonnalisation('2026-11', 1, v2)).not.toBeNull();
+    await v2.delete();
   });
 });

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCochages, useEcranAllume, useReglages } from '../app/hooks';
 import { cles } from '../data/depot';
-import { formaterHeureSession, minutesDepuisDebut } from '../domain/dates';
+import { formaterHeureSession, heureHorloge, minutesDepuisDebut } from '../domain/dates';
 import type { Plan, Semaine } from '../domain/schema/plan';
 import { etapesTriees, minuteurEtape } from '../domain/session';
 import { BarreMinuteurs, useMinuteurs } from '../ui/minuteurs';
@@ -25,8 +25,9 @@ export function Cuisine({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
   const cleChrono = `batch-chrono-${plan.mois}-${semaine.numero}`;
   const [debut, setDebut] = useState<number | null>(() => {
     try {
-      const v = localStorage.getItem(cleChrono);
-      return v ? Number(v) : null;
+      const v = Number(localStorage.getItem(cleChrono));
+      // Une heure de début vieille de plus de 24 h vient d'une session passée : on l'ignore.
+      return v && Date.now() - v < 86_400_000 ? v : null;
     } catch {
       return null;
     }
@@ -42,15 +43,28 @@ export function Cuisine({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
     prochaineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [prochaine?.id]);
 
-  const demarrerChrono = () => {
-    const t = Date.now();
+  // Heure de début : « Démarrer » = maintenant, ou heure choisie (ex. 14:30, aujourd'hui).
+  // Sans heure de début, les étapes gardent les heures du plan (0:00, 0:05…).
+  const fixerDebut = (t: number | null) => {
     setDebut(t);
     try {
-      localStorage.setItem(cleChrono, String(t));
+      if (t === null) localStorage.removeItem(cleChrono);
+      else localStorage.setItem(cleChrono, String(t));
     } catch {
       /* ignoré */
     }
   };
+  const choisirHeure = (valeur: string) => {
+    const [h, m] = valeur.split(':').map(Number);
+    if (h === undefined || m === undefined || Number.isNaN(h) || Number.isNaN(m)) return;
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    fixerDebut(d.getTime());
+  };
+  const heureDebut =
+    debut === null
+      ? null
+      : `${String(new Date(debut).getHours()).padStart(2, '0')}:${String(new Date(debut).getMinutes()).padStart(2, '0')}`;
 
   if (!session) {
     return (
@@ -73,17 +87,31 @@ export function Cuisine({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
           <strong>
             {faites}/{etapes.length}
           </strong>
-          {ecoule !== null ? (
-            <span className="chrono" aria-label="Temps écoulé depuis le début">
-              ⏱ {formaterHeureSession(Math.max(0, ecoule))}
-            </span>
-          ) : (
-            <button type="button" className="bouton" onClick={demarrerChrono}>
-              Démarrer la session
-            </button>
-          )}
+          {ecoule !== null &&
+            (ecoule >= 0 ? (
+              <span className="chrono" aria-label="Temps écoulé depuis le début">
+                ⏱ {formaterHeureSession(ecoule)}
+              </span>
+            ) : (
+              <span className="chrono">Début à {heureDebut}</span>
+            ))}
         </div>
       </header>
+      <div className="heure-debut">
+        <label>
+          Heure de début
+          <input type="time" value={heureDebut ?? ''} onChange={(ev) => choisirHeure(ev.target.value)} />
+        </label>
+        {debut === null ? (
+          <button type="button" className="bouton" onClick={() => fixerDebut(Date.now())}>
+            Démarrer maintenant
+          </button>
+        ) : (
+          <button type="button" className="bouton-secondaire" onClick={() => fixerDebut(null)}>
+            Effacer
+          </button>
+        )}
+      </div>
       <p className={`petit ${ecran === 'actif' ? 'discret' : 'texte-alerte'}`}>{LIBELLES_ECRAN[ecran]}</p>
       <BarreMinuteurs m={minuteurs} />
 
@@ -104,7 +132,12 @@ export function Cuisine({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
                 <input type="checkbox" checked={fait} onChange={() => void basculer(cle)} aria-label={`Étape ${e.debut} faite`} />
               </label>
               <div>
-                <ContenuEtape e={e} session={session} reglages={reglages} />
+                <ContenuEtape
+                  e={e}
+                  session={session}
+                  reglages={reglages}
+                  heureHorloge={heureDebut ? heureHorloge(heureDebut, e.debut) : undefined}
+                />
                 {m && !fait && (
                   <button
                     type="button"

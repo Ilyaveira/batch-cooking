@@ -2,7 +2,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useState } from 'react';
 import { db } from '../data/db';
-import { cochagesAvecPrefixe, cocher, lireReglages } from '../data/depot';
+import { cochagesAvecPrefixe, cocher, lirePersonnalisation, lireReglages } from '../data/depot';
 import { REGLAGES_DEFAUT, type Reglages } from '../domain/reglages';
 import type { Plan, Semaine } from '../domain/schema/plan';
 
@@ -50,6 +50,14 @@ export function useCochages(prefixe: string) {
   const coches = useLiveQuery(() => cochagesAvecPrefixe(prefixe), [prefixe], new Set<string>()) ?? new Set<string>();
   const basculer = useCallback((cle: string) => cocher(cle, !coches.has(cle)), [coches]);
   return { coches, basculer };
+}
+
+/**
+ * Ordre et heures des étapes modifiés dans l'app pour une semaine.
+ * undefined = en cours de chargement ; null = ordre du plan.
+ */
+export function usePersonnalisation(mois: string | undefined, semaine: number) {
+  return useLiveQuery(async () => (mois ? lirePersonnalisation(mois, semaine) : null), [mois, semaine]);
 }
 
 /** Semaine « en cours » : la dernière dont la session est passée (ou la première). */

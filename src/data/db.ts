@@ -4,6 +4,7 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { Ingredient, Plan, Recette } from '../domain/schema/plan';
 import type { Reglages } from '../domain/reglages';
+import type { Personnalisation } from '../domain/reorganisation';
 
 type Meta = { majLe: number; appareil: string; supprimeLe?: number };
 
@@ -18,11 +19,15 @@ export type Cochage = Meta & { cle: string; coche: boolean };
 
 export type ReglagesEnregistres = Meta & { cle: 'reglages'; valeur: Reglages };
 
+/** Ordre et heures des étapes modifiés dans l'app. Clé : « mois|semaine ». */
+export type PersonnalisationEnregistree = Meta & Personnalisation & { cle: string; mois: string; semaine: number };
+
 export class BaseBatch extends Dexie {
   plans!: EntityTable<PlanEnregistre, 'id'>;
   recettes!: EntityTable<RecetteEnregistree, 'id'>;
   cochages!: EntityTable<Cochage, 'cle'>;
   reglages!: EntityTable<ReglagesEnregistres, 'cle'>;
+  personnalisations!: EntityTable<PersonnalisationEnregistree, 'cle'>;
 
   constructor(nom = 'batch-cooking') {
     super(nom);
@@ -32,6 +37,8 @@ export class BaseBatch extends Dexie {
       cochages: 'cle, majLe',
       reglages: 'cle',
     });
+    // v2 : réorganisation des étapes de session (les données v1 sont conservées telles quelles).
+    this.version(2).stores({ personnalisations: 'cle, mois, majLe' });
   }
 }
 

@@ -28,8 +28,32 @@ installez-la, et utilisez **Réglages → Exporter une sauvegarde** de temps en 
 4. À la première importation, renseigner dans **Réglages** les aliments exclus de chaque personne
    et vérifier les durées de conservation.
 
-Réimporter le plan d'un mois le remplace ; les cases cochées, les réglages et la bibliothèque sont
-conservés.
+Réimporter le plan d'un mois le remplace ; les cases cochées, les réglages, la bibliothèque et
+l'ordre des étapes modifié dans l'app sont conservés.
+
+### Données par appareil
+
+Les données sont enregistrées dans le navigateur de chaque appareil, sans compte ni serveur : un
+plan importé sur le PC n'apparaît pas sur le téléphone (la synchronisation est prévue plus tard).
+Pour passer d'un appareil à l'autre :
+- importer le même fichier JSON sur chaque appareil ;
+- ou **Réglages → Exporter une sauvegarde**, puis **Restaurer une sauvegarde** sur l'autre appareil
+  (remplace tout son contenu) ;
+- pour ne transmettre qu'un plan avec l'ordre d'étapes modifié : **Réglages → Plans importés →
+  Exporter**, puis l'importer sur l'autre appareil (ou le redonner à Claude).
+
+### Réorganiser les étapes
+
+Écran **Session → Réorganiser** :
+- changer le **n°** d'une étape la déplace à cette place (15 → 8 : l'ancienne 8 devient la 9…) ;
+  les flèches ↑ / ↓ la déplacent d'un cran ;
+- une étape déplacée **prend l'heure de l'étape dont elle prend la place**, pour que la liste reste
+  chronologique (le planning et les retards du mode cuisine restent cohérents) ;
+- changer l'**heure** d'une étape (ex. `0:25`, `0h25`, `25`) la replace d'elle-même ;
+- **Revenir à l'ordre du plan** annule toutes les modifications de la semaine.
+
+Les modifications sont gardées à part du plan importé : elles survivent à un réimport (les
+étapes qui n'existent plus sont ignorées, les nouvelles s'insèrent selon leur heure).
 
 ## Ce que fait l'app (MVP)
 
@@ -39,8 +63,8 @@ conservés.
 | Repas | « Quand manger quoi » du dimanche soir au jeudi (réglable), avec J+n et un statut de conservation par repas. |
 | Courses | Quantités agrégées par ingrédient, triées par rayon, à cocher ; détail par recette. |
 | Placard | Liste mensuelle à vérifier, avec ce que les recettes du mois en utilisent. |
-| Session | « À sortir » (frigo, congélateur, légumes, placard, ustensiles) et étapes horodatées par tranches de 30 min, poste en couleur, ingrédients en gras. |
-| Mode cuisine | Gros texte, écran maintenu allumé (Screen Wake Lock), minuteurs avec rappels (vibration + bip), étapes à cocher, chrono de session. |
+| Session | « À sortir » (frigo, congélateur, légumes, placard, ustensiles) et étapes horodatées par tranches de 30 min, poste en couleur, ingrédients en gras. Bouton **Réorganiser** : changer le n° d'une étape, la monter/descendre, ou changer son heure. |
+| Mode cuisine | Gros texte, écran maintenu allumé (Screen Wake Lock), minuteurs avec rappels (vibration + bip), étapes à cocher, chrono de session. **Heure de début** facultative : les étapes affichent alors l'heure réelle (14:30, 14:35…). |
 | Recettes | Bibliothèque (recherche, filtres végétarien / féculent / saison), fiche avec portions ajustables. |
 | Réglages | Personnes et aliments exclus, durées de conservation (avec leur source), four (chaleur tournante, écart), Cook Expert, sauvegarde. |
 
@@ -99,6 +123,7 @@ src/
 │  ├─ courses.ts      Agrégation des courses et placard du mois
 │  ├─ session.ts      À sortir, étapes, Gantt (couloirs/segments), minuteurs
 │  ├─ calendrier.ts   Quand manger quoi et statuts de conservation
+│  ├─ reorganisation.ts Ordre et heures des étapes modifiés dans l'app
 │  ├─ exclusions.ts   Aliments exclus par personne
 │  └─ reglages.ts     Réglages par défaut sourcés, températures du four
 ├─ data/              IndexedDB (Dexie) et fonctions d'accès (import, cases cochées, sauvegarde)

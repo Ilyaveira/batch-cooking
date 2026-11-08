@@ -2,9 +2,17 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { usePlans, useReglages } from '../app/hooks';
-import { enregistrerReglages, exporterSauvegarde, restaurerSauvegarde, supprimerPlan, type Sauvegarde } from '../data/depot';
+import {
+  enregistrerReglages,
+  exporterSauvegarde,
+  personnalisationsDuMois,
+  restaurerSauvegarde,
+  supprimerPlan,
+  type Sauvegarde,
+} from '../data/depot';
 import { JOURS } from '../domain/constantes';
 import { moisLong } from '../domain/dates';
+import { planAvecPersonnalisations } from '../domain/reorganisation';
 import { CONSERVATION_DEFAUT, type Reglages as TypeReglages, type TypeConservation } from '../domain/reglages';
 
 function telecharger(nom: string, contenu: unknown) {
@@ -222,7 +230,12 @@ export function Reglages() {
             <li key={p.id} className="ligne-plan">
               <span>{moisLong(p.id)}</span>
               <span className="actions">
-                <button type="button" className="bouton-secondaire" onClick={() => telecharger(`plan-${p.id}.json`, p.plan)}>
+                <button
+                  type="button"
+                  className="bouton-secondaire"
+                  title="Plan au format SCHEMA.md, avec l’ordre et les heures d’étapes modifiés dans l’app"
+                  onClick={async () => telecharger(`plan-${p.id}.json`, planAvecPersonnalisations(p.plan, await personnalisationsDuMois(p.id)))}
+                >
                   Exporter
                 </button>
                 <button

@@ -1,7 +1,16 @@
 // Fonctions d'accès aux données : l'interface ne parle jamais directement à Dexie.
 import { REGLAGES_DEFAUT, type Reglages } from '../domain/reglages';
+import type { Personnalisation } from '../domain/reorganisation';
 import type { Plan } from '../domain/schema/plan';
-import { db, meta, type BaseBatch, type Cochage, type PlanEnregistre, type RecetteEnregistree } from './db';
+import {
+  db,
+  meta,
+  type BaseBatch,
+  type Cochage,
+  type PersonnalisationEnregistree,
+  type PlanEnregistre,
+  type RecetteEnregistree,
+} from './db';
 
 export async function lireReglages(base: BaseBatch = db): Promise<Reglages> {
   const r = await base.reglages.get('reglages');
@@ -49,10 +58,36 @@ export async function importerPlan(plan: Plan, base: BaseBatch = db): Promise<Bi
 }
 
 export async function supprimerPlan(mois: string, base: BaseBatch = db): Promise<void> {
-  await base.transaction('rw', base.plans, base.cochages, async () => {
+  await base.transaction('rw', base.plans, base.cochages, base.personnalisations, async () => {
     await base.plans.delete(mois);
     await base.cochages.where('cle').startsWith(`${mois}|`).delete();
+    await base.personnalisations.where('mois').equals(mois).delete();
   });
+}
+
+const clePerso = (mois: string, semaine: number) => `${mois}|${semaine}`;
+
+export async function lirePersonnalisation(mois: string, semaine: number, base: BaseBatch = db): Promise<Personnalisation | null> {
+  const p = await base.personnalisations.get(clePerso(mois, semaine));
+  return p ? { ordre: p.ordre, heures: p.heures } : null;
+}
+
+/** Enregistre l'ordre modifié d'une semaine ; null = revenir à l'ordre du plan. */
+export async function enregistrerPersonnalisation(
+  mois: string,
+  semaine: number,
+  perso: Personnalisation | null,
+  base: BaseBatch = db,
+): Promise<void> {
+  const cle = clePerso(mois, semaine);
+  if (perso === null) await base.personnalisations.delete(cle);
+  else await base.personnalisations.put({ cle, mois, semaine, ordre: perso.ordre, heures: perso.heures, ...meta() });
+}
+
+/** Personnalisations d'un mois, par numéro de semaine (pour l'export du plan). */
+export async function personnalisationsDuMois(mois: string, base: BaseBatch = db): Promise<Map<number, Personnalisation>> {
+  const liste = await base.personnalisations.where('mois').equals(mois).toArray();
+  return new Map(liste.map((p) => [p.semaine, { ordre: p.ordre, heures: p.heures }]));
 }
 
 export async function listerPlans(base: BaseBatch = db): Promise<PlanEnregistre[]> {
@@ -91,6 +126,8 @@ export type Sauvegarde = {
   recettes: RecetteEnregistree[];
   cochages: Cochage[];
   reglages: Reglages;
+  /** Absent des sauvegardes faites avant la réorganisation des étapes. */
+  personnalisations?: PersonnalisationEnregistree[];
 };
 
 export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegarde> {
@@ -102,6 +139,7 @@ export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegar
     recettes: await base.recettes.toArray(),
     cochages: await base.cochages.toArray(),
     reglages: await lireReglages(base),
+    personnalisations: await base.personnalisations.toArray(),
   };
 }
 
@@ -109,11 +147,13 @@ export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegar
 export async function restaurerSauvegarde(s: Sauvegarde, base: BaseBatch = db): Promise<void> {
   if (s.format !== 'batch-cooking-sauvegarde' || s.version !== 1)
     throw new Error('Ce fichier n’est pas une sauvegarde de l’application (format ou version inconnus).');
-  await base.transaction('rw', [base.plans, base.recettes, base.cochages, base.reglages], async () => {
-    await Promise.all([base.plans.clear(), base.recettes.clear(), base.cochages.clear(), base.reglages.clear()]);
+  const tables = [base.plans, base.recettes, base.cochages, base.reglages, base.personnalisations];
+  await base.transaction('rw', tables, async () => {
+    await Promise.all(tables.map((t) => t.clear()));
     await base.plans.bulkPut(s.plans);
     await base.recettes.bulkPut(s.recettes);
     await base.cochages.bulkPut(s.cochages);
+    await base.personnalisations.bulkPut(s.personnalisations ?? []);
     await enregistrerReglages(s.reglages, base);
   });
 }

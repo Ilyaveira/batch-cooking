@@ -123,6 +123,11 @@ export const cles = {
   prefixeCourses: (mois: string, semaine: number) => `${mois}|courses|${semaine}|`,
   prefixePlacard: (mois: string) => `${mois}|placard|`,
   prefixeEtapes: (mois: string, semaine: number) => `${mois}|etape|${semaine}|`,
+  /** « À sortir » : ingrédient (clé de ligne « ingredient|famille ») ou ustensile (« u:libellé »). */
+  sortir: (mois: string, semaine: number, element: string) => `${mois}|sortir|${semaine}|${element}`,
+  prefixeSortir: (mois: string, semaine: number) => `${mois}|sortir|${semaine}|`,
+  /** Élément « à sortir » d'un ustensile : libellé normalisé, stable d'une ouverture à l'autre. */
+  ustensile: (libelle: string) => `u:${libelle.trim().toLocaleLowerCase('fr')}`,
 };
 
 /** Enregistre des notes (une par personne) ; chacune est vérifiée avant, rien n'est écrit en cas d'erreur. */

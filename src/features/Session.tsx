@@ -4,7 +4,7 @@
 import { useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useCochages, useReglages } from '../app/hooks';
-import { cles, cocher, enregistrerPersonnalisation } from '../data/depot';
+import { cles, cocher, decocherTout, enregistrerPersonnalisation } from '../data/depot';
 import { LIBELLES_STOCKAGE } from '../domain/constantes';
 import { texteQuantite } from '../domain/courses';
 import { formaterHeureSession, minutesDepuisDebut } from '../domain/dates';
@@ -350,8 +350,18 @@ export function Session({
   const reglages = useReglages();
   const prefixe = cles.prefixeEtapes(plan.mois, semaine.numero);
   const { coches } = useCochages(prefixe);
+  // « À sortir » : mêmes cases que les courses, enregistrées par semaine.
+  const prefixeSortir = cles.prefixeSortir(plan.mois, semaine.numero);
+  const { coches: sortis, basculer: basculerSortir } = useCochages(prefixeSortir);
+  const cleSortir = (element: string) => cles.sortir(plan.mois, semaine.numero, element);
   const [reorganiser, setReorganiser] = useState(false);
   const a = aSortir(plan, semaine);
+  const elementsASortir = [
+    ...a.parStockage.flatMap((g) => g.lignes.map((l) => cleSortir(l.cle))),
+    ...a.ustensiles.map((u) => cleSortir(cles.ustensile(u))),
+  ];
+  const totalASortir = elementsASortir.length;
+  const totalSortis = elementsASortir.filter((c) => sortis.has(c)).length;
   const session = semaine.session;
   const cle = (id: string) => cles.etape(plan.mois, semaine.numero, id);
   const blocFait = (b: Bloc) => b.membres.every((m) => coches.has(cle(m.id)));
@@ -369,22 +379,45 @@ export function Session({
       {!reorganiser && (
         <section className="carte">
           <h2>À sortir</h2>
+          <div className="barre-outils">
+            <span>
+              {totalSortis} / {totalASortir} sortis
+            </span>
+            {totalSortis > 0 && (
+              <button type="button" className="bouton-secondaire" onClick={() => void decocherTout(prefixeSortir)}>
+                Tout décocher
+              </button>
+            )}
+          </div>
           {a.parStockage.map((g) => (
             <div key={g.stockage}>
               <h3>{LIBELLES_STOCKAGE[g.stockage]}</h3>
-              <ul className="liste-simple">
-                {g.lignes.map((l) => (
-                  <li key={l.cle}>
-                    {l.ingredient.nom} <span className="discret">· {texteQuantite(l)}</span>
-                  </li>
-                ))}
-              </ul>
+              {g.lignes.map((l) => {
+                const c = cleSortir(l.cle);
+                return (
+                  <Case key={l.cle} coche={sortis.has(c)} onChange={() => void basculerSortir(c)}>
+                    <span className="ligne-courses">
+                      <span>{l.ingredient.nom}</span>
+                      <span className={`quantite ${l.incomplete ? 'quantite-incomplete' : ''}`}>{texteQuantite(l)}</span>
+                    </span>
+                  </Case>
+                );
+              })}
             </div>
           ))}
           {a.ustensiles.length > 0 && (
             <>
               <h3>Ustensiles</h3>
-              <p>{a.ustensiles.join(', ')}</p>
+              {a.ustensiles.map((u) => {
+                const c = cleSortir(cles.ustensile(u));
+                return (
+                  <Case key={u} coche={sortis.has(c)} onChange={() => void basculerSortir(c)}>
+                    <span className="ligne-courses">
+                      <span>{u}</span>
+                    </span>
+                  </Case>
+                );
+              })}
             </>
           )}
         </section>

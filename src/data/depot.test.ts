@@ -6,6 +6,7 @@ import {
   cles,
   cocher,
   cochagesAvecPrefixe,
+  decocherTout,
   ajouterNotes,
   enregistrerPersonnalisation,
   listerNotes,
@@ -158,5 +159,17 @@ describe('dépôt', () => {
     await ajouterNotes([{ recetteId: 'mujaddara', personneId: 'a', date: '2026-11-10', facilite: 4, gout: 5 }], base);
     await supprimerPlan('2026-11', base);
     expect(await listerNotes(base)).toHaveLength(1);
+  });
+
+  it('« à sortir » : cases séparées des courses, « Tout décocher » n’efface qu’elles', async () => {
+    await cocher(cles.sortir('2026-11', 1, 'feta|masse'), true, base);
+    await cocher(cles.sortir('2026-11', 1, cles.ustensile(' Moule à cake ')), true, base);
+    await cocher(cles.courses('2026-11', 1, 'feta|masse'), true, base);
+    expect(await cochagesAvecPrefixe(cles.prefixeSortir('2026-11', 1), base)).toEqual(
+      new Set(['2026-11|sortir|1|feta|masse', '2026-11|sortir|1|u:moule à cake']),
+    );
+    await decocherTout(cles.prefixeSortir('2026-11', 1), base);
+    expect((await cochagesAvecPrefixe(cles.prefixeSortir('2026-11', 1), base)).size).toBe(0);
+    expect((await cochagesAvecPrefixe(cles.prefixeCourses('2026-11', 1), base)).size).toBe(1);
   });
 });

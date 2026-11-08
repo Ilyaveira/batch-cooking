@@ -112,4 +112,17 @@ describe('dépôt', () => {
     expect(await lirePersonnalisation('2026-11', 1, v2)).not.toBeNull();
     await v2.delete();
   });
+
+  it('enregistre tous les champs d’une personnalisation (textes, scissions, fusions)', async () => {
+    const perso = {
+      ordre: ['s1-02', 's1-01'],
+      heures: {},
+      textes: { 's1-02': { texte: 'Eau salée.', details: ['Couvercle'] } },
+      ajouts: { 's1-02-b': { id: 's1-02-b', source: 's1-02', debut: '0:00', poste: 'feux' as const, actifMin: 0, texte: 'Suite.' } },
+      groupes: { 's1-01': 's1-01' },
+    };
+    await enregistrerPersonnalisation('2026-11', 1, perso, base);
+    expect(await lirePersonnalisation('2026-11', 1, base)).toEqual(perso);
+    expect((await personnalisationsDuMois('2026-11', base)).get(1)).toEqual(perso);
+  });
 });

@@ -829,3 +829,35 @@ textarea {
   font-size: 0.8em;
   font-variant-numeric: tabular-nums;
 }
+
+/* Édition, scission et fusion des étapes */
+.membre-fusion {
+  border-left: 4px solid var(--accent-doux);
+  padding-left: 0.6rem;
+  margin-top: 0.35rem;
+}
+.membre-reorganisation {
+  margin-top: 0.3rem;
+}
+.bouton-lien {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font: inherit;
+  font-weight: 600;
+  min-height: 44px;
+  padding: 0 0.2rem;
+  cursor: pointer;
+}
+.editeur-etape {
+  background: var(--fond);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 0.6rem;
+  margin: 0.4rem 0;
+}
+.editeur-etape textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  width: 100%;
+}

@@ -130,6 +130,9 @@ export const etapeSessionSchema = z.strictObject({
   texte: z.string().min(1).describe('Consigne courte. Seul le gras **…** est interprété (ingrédients et quantités).'),
   details: z.array(z.string().min(1)).optional().describe('Sous-points (plaque 1, plaque 2…).'),
   recettes: z.array(ID).optional().describe('ids des recettes concernées.'),
+  groupe: ID.optional().describe(
+    'Étapes fusionnées : des étapes consécutives de même « groupe » s’affichent comme une seule carte (même heure conseillée), chacune gardant ses durées et son minuteur.',
+  ),
 });
 
 export const sessionSchema = z.strictObject({

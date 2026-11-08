@@ -1,29 +1,43 @@
 // Organisation de la session : « à sortir », puis les étapes dans l'ordre chronologique.
-// Mode « Réorganiser » : changer le n° d'une étape, la monter/descendre, ou changer son heure.
+// Mode « Réorganiser » : déplacer (n° ou flèches), changer l'heure, modifier le texte,
+// scinder une étape, fusionner avec la suivante ou défaire une fusion.
 import { useState, type FocusEvent, type KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useCochages, useReglages } from '../app/hooks';
-import { cles, enregistrerPersonnalisation } from '../data/depot';
+import { cles, cocher, enregistrerPersonnalisation } from '../data/depot';
 import { LIBELLES_STOCKAGE } from '../domain/constantes';
 import { texteQuantite } from '../domain/courses';
 import { formaterHeureSession, minutesDepuisDebut } from '../domain/dates';
-import { changerHeure, deplacerEtape, ErreurReorganisation, type Personnalisation } from '../domain/reorganisation';
+import {
+  blocs as calculerBlocs,
+  changerHeure,
+  deplacerEtape,
+  ErreurReorganisation,
+  formaterSaisieEtape,
+  fusionnerAvecSuivante,
+  modifierTexte,
+  proposerCoupure,
+  scinderEtape,
+  separerFusion,
+  type Bloc,
+  type Personnalisation,
+} from '../domain/reorganisation';
 import type { EtapeSession, Plan, Semaine, Session as TypeSession } from '../domain/schema/plan';
-import { aSortir, etapesTriees, planning } from '../domain/session';
-import { Case, PastillePoste, TexteEtape } from '../ui/composants';
-import { ContenuEtape } from './EtapeSession';
+import { aSortir, planning } from '../domain/session';
+import { Case, TexteEtape } from '../ui/composants';
+import { ContenuBloc, EnteteBloc } from './EtapeSession';
 import { OngletsSemaine } from './OngletsSemaine';
 
-/** Regroupe les étapes par tranches de 30 minutes. */
-function parTranches(etapes: EtapeSession[]) {
-  const groupes = new Map<number, EtapeSession[]>();
-  for (const e of etapes) {
-    const t = Math.floor(minutesDepuisDebut(e.debut) / 30);
-    groupes.set(t, [...(groupes.get(t) ?? []), e]);
+/** Regroupe les blocs par tranches de 30 minutes. */
+function parTranches(liste: Bloc[]) {
+  const groupes = new Map<number, Bloc[]>();
+  for (const b of liste) {
+    const t = Math.floor(minutesDepuisDebut(b.debut) / 30);
+    groupes.set(t, [...(groupes.get(t) ?? []), b]);
   }
-  return [...groupes.entries()].map(([t, liste]) => ({
+  return [...groupes.entries()].map(([t, l]) => ({
     libelle: `${formaterHeureSession(t * 30)} – ${formaterHeureSession(t * 30 + 30)}`,
-    etapes: liste,
+    blocs: l,
   }));
 }
 
@@ -40,6 +54,69 @@ function valider(appliquer: (valeur: string) => boolean) {
   };
 }
 
+/** Éditeur d'une étape : modifier la consigne et les sous-points, ou scinder en deux. */
+function EditeurEtape({
+  e,
+  modifier,
+  fermer,
+  session,
+  origine,
+}: {
+  e: EtapeSession;
+  modifier: (calcul: () => Personnalisation | null) => boolean;
+  fermer: () => void;
+  session: TypeSession;
+  origine: TypeSession;
+}) {
+  const [saisie, setSaisie] = useState(formaterSaisieEtape(e));
+  const [seconde, setSeconde] = useState<string | null>(null);
+  const aide = 'Une ligne commençant par « - » devient un sous-point. Entourez un ingrédient de ** pour le mettre en gras.';
+  const scinder = () => {
+    const [a, b] = proposerCoupure({ texte: saisie.split('\n')[0] ?? '', details: undefined });
+    const reste = saisie.split('\n').slice(1).join('\n');
+    setSaisie(a);
+    setSeconde([b, reste].filter(Boolean).join('\n'));
+  };
+  return (
+    <div className="editeur-etape">
+      <label className="champ">
+        {seconde === null ? 'Texte de l’étape' : '1ʳᵉ partie (garde l’heure et le minuteur)'}
+        <textarea rows={4} value={saisie} onChange={(ev) => setSaisie(ev.target.value)} />
+      </label>
+      {seconde !== null && (
+        <label className="champ">
+          2ᵉ partie (même heure, juste après, sans minuteur)
+          <textarea rows={4} value={seconde} onChange={(ev) => setSeconde(ev.target.value)} />
+        </label>
+      )}
+      <p className="discret petit">{aide}</p>
+      <div className="actions">
+        {seconde === null ? (
+          <>
+            <button type="button" className="bouton" onClick={() => modifier(() => modifierTexte(session, origine, e.id, saisie)) && fermer()}>
+              Enregistrer
+            </button>
+            <button type="button" className="bouton-secondaire" onClick={scinder}>
+              Scinder en deux
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            className="bouton"
+            onClick={() => modifier(() => scinderEtape(session, origine, e.id, saisie, seconde)) && fermer()}
+          >
+            Valider la scission
+          </button>
+        )}
+        <button type="button" className="bouton-secondaire" onClick={fermer}>
+          Annuler
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Reorganisation({
   plan,
   semaine,
@@ -54,7 +131,8 @@ function Reorganisation({
   modifiee: boolean;
 }) {
   const [erreur, setErreur] = useState<string | null>(null);
-  const etapes = etapesTriees(session);
+  const [enEdition, setEnEdition] = useState<string | null>(null);
+  const liste = calculerBlocs(session);
 
   const modifier = (calcul: () => Personnalisation | null): boolean => {
     try {
@@ -73,8 +151,8 @@ function Reorganisation({
   return (
     <>
       <p className="discret petit">
-        Changez le n° d’une étape pour la déplacer (les suivantes sont décalées), ou utilisez les flèches. Une étape déplacée
-        prend l’heure de l’étape dont elle prend la place. Changer une heure replace l’étape au bon endroit.
+        Changez le n° d’un bloc pour le déplacer (les suivants sont décalés), ou utilisez les flèches : il prend l’heure de la place
+        qu’il occupe. Changer une heure replace le bloc au bon endroit. « Modifier » permet de réécrire ou de scinder une étape.
       </p>
       {erreur && (
         <p className="texte-alerte" role="alert">
@@ -82,55 +160,90 @@ function Reorganisation({
         </p>
       )}
       <ol className="reorganisation">
-        {etapes.map((e, i) => (
-          <li key={`${e.id}-${i}-${e.debut}`} className="ligne-reorganisation">
+        {liste.map((b, i) => (
+          <li key={`${b.id}-${i}-${b.debut}-${b.membres.length}`} className="ligne-reorganisation">
             <div className="reorganisation-commandes">
-              <label className="champ-court">
-                <span className="visuellement-cache">Numéro de l’étape</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={etapes.length}
-                  defaultValue={i + 1}
-                  aria-label={`Numéro de l’étape ${i + 1}`}
-                  {...valider((v) => deplacer(e.id, Number(v)))}
-                />
-              </label>
-              <button
-                type="button"
-                className="bouton-rond"
-                aria-label={`Monter l’étape ${i + 1}`}
-                disabled={i === 0}
-                onClick={() => deplacer(e.id, i)}
-              >
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={liste.length}
+                defaultValue={i + 1}
+                aria-label={`Numéro de l’étape ${i + 1}`}
+                {...valider((v) => deplacer(b.id, Number(v)))}
+              />
+              <button type="button" className="bouton-rond" aria-label={`Monter l’étape ${i + 1}`} disabled={i === 0} onClick={() => deplacer(b.id, i)}>
                 ↑
               </button>
               <button
                 type="button"
                 className="bouton-rond"
                 aria-label={`Descendre l’étape ${i + 1}`}
-                disabled={i === etapes.length - 1}
-                onClick={() => deplacer(e.id, i + 2)}
+                disabled={i === liste.length - 1}
+                onClick={() => deplacer(b.id, i + 2)}
               >
                 ↓
               </button>
-              <label className="champ-court">
-                <span className="visuellement-cache">Heure de début</span>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  className="champ-heure"
-                  defaultValue={e.debut}
-                  aria-label={`Heure de l’étape ${i + 1}`}
-                  {...valider((v) => modifier(() => changerHeure(session, origine, e.id, v)))}
-                />
-              </label>
-              <PastillePoste poste={e.poste} />
+              <input
+                type="text"
+                inputMode="decimal"
+                className="champ-heure"
+                defaultValue={b.debut}
+                aria-label={`Heure de l’étape ${i + 1}`}
+                {...valider((v) => modifier(() => changerHeure(session, origine, b.id, v)))}
+              />
             </div>
-            <p className="etape-texte">
-              <TexteEtape texte={e.texte} />
-            </p>
+            <EnteteBloc bloc={b} sansHeure />
+            {b.membres.map((m) =>
+              enEdition === m.id ? (
+                <EditeurEtape key={m.id} e={m} modifier={modifier} fermer={() => setEnEdition(null)} session={session} origine={origine} />
+              ) : (
+                <div key={m.id} className={`membre-reorganisation ${b.membres.length > 1 ? 'membre-fusion' : ''}`}>
+                  <p className="etape-texte">
+                    <TexteEtape texte={m.texte} />
+                  </p>
+                  {m.details && (
+                    <ul className="etape-details">
+                      {m.details.map((d, k) => (
+                        <li key={k}>
+                          <TexteEtape texte={d} />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <button
+                    type="button"
+                    className="bouton-lien"
+                    aria-label={`Modifier l’étape ${i + 1}${b.membres.length > 1 ? ` (partie ${b.membres.indexOf(m) + 1})` : ''}`}
+                    onClick={() => setEnEdition(m.id)}
+                  >
+                    ✎ Modifier
+                  </button>
+                </div>
+              ),
+            )}
+            <div className="actions">
+              {i < liste.length - 1 && (
+                <button
+                  type="button"
+                  className="bouton-secondaire"
+                  aria-label={`Fusionner l’étape ${i + 1} avec la suivante`}
+                  onClick={() => modifier(() => fusionnerAvecSuivante(session, origine, b.id))}
+                >
+                  Fusionner avec la suivante
+                </button>
+              )}
+              {b.membres.length > 1 && (
+                <button
+                  type="button"
+                  className="bouton-secondaire"
+                  aria-label={`Séparer l’étape ${i + 1}`}
+                  onClick={() => modifier(() => separerFusion(session, origine, b.id))}
+                >
+                  Séparer
+                </button>
+              )}
+            </div>
           </li>
         ))}
       </ol>
@@ -139,11 +252,11 @@ function Reorganisation({
           type="button"
           className="bouton-secondaire"
           onClick={() =>
-            confirm('Revenir à l’ordre et aux heures du plan importé ?') &&
+            confirm('Annuler toutes les modifications des étapes de cette semaine (ordre, heures, textes, scissions, fusions) ?') &&
             void enregistrerPersonnalisation(plan.mois, semaine.numero, null)
           }
         >
-          Revenir à l’ordre du plan
+          Revenir au plan importé
         </button>
       )}
     </>
@@ -157,18 +270,20 @@ export function Session({
   modifiee = false,
 }: {
   plan: Plan;
-  /** Semaine avec l'ordre et les heures modifiés dans l'app déjà appliqués. */
+  /** Semaine avec les modifications faites dans l'app déjà appliquées. */
   semaine: Semaine;
-  /** Session telle qu'importée (référence pour la réorganisation). */
+  /** Session telle qu'importée (référence pour les modifications). */
   origine?: TypeSession;
   modifiee?: boolean;
 }) {
   const reglages = useReglages();
   const prefixe = cles.prefixeEtapes(plan.mois, semaine.numero);
-  const { coches, basculer } = useCochages(prefixe);
+  const { coches } = useCochages(prefixe);
   const [reorganiser, setReorganiser] = useState(false);
   const a = aSortir(plan, semaine);
   const session = semaine.session;
+  const cle = (id: string) => cles.etape(plan.mois, semaine.numero, id);
+  const blocFait = (b: Bloc) => b.membres.every((m) => coches.has(cle(m.id)));
 
   return (
     <>
@@ -215,23 +330,23 @@ export function Session({
               </button>
             )}
           </div>
-          {modifiee && <p className="bandeau-info">Ordre modifié sur cet appareil.</p>}
+          {modifiee && <p className="bandeau-info">Étapes modifiées sur cet appareil.</p>}
           {reorganiser && origine ? (
             <Reorganisation plan={plan} semaine={semaine} session={session} origine={origine} modifiee={modifiee} />
           ) : (
             <>
               <p className="discret">
-                {session.etapes.length} étapes · environ {formaterHeureSession(session.dureeMin ?? planning(session).finMin)}.
+                {calculerBlocs(session).length} étapes · environ {formaterHeureSession(session.dureeMin ?? planning(session).finMin)}.
                 L’heure compte depuis le début de la session.
               </p>
-              {parTranches(etapesTriees(session)).map((t) => (
+              {parTranches(calculerBlocs(session)).map((t) => (
                 <div key={t.libelle}>
                   <h3 className="tranche">{t.libelle}</h3>
-                  {t.etapes.map((e) => {
-                    const cle = cles.etape(plan.mois, semaine.numero, e.id);
+                  {t.blocs.map((b) => {
+                    const fait = blocFait(b);
                     return (
-                      <Case key={e.id} coche={coches.has(cle)} onChange={() => void basculer(cle)}>
-                        <ContenuEtape e={e} session={session} reglages={reglages} />
+                      <Case key={b.id} coche={fait} onChange={() => b.membres.forEach((m) => void cocher(cle(m.id), !fait))}>
+                        <ContenuBloc bloc={b} session={session} reglages={reglages} />
                       </Case>
                     );
                   })}

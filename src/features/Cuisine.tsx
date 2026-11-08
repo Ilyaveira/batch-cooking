@@ -2,12 +2,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCochages, useEcranAllume, useReglages } from '../app/hooks';
-import { cles } from '../data/depot';
+import { cles, cocher } from '../data/depot';
 import { formaterHeureSession, heureHorloge, minutesDepuisDebut } from '../domain/dates';
 import type { Plan, Semaine } from '../domain/schema/plan';
-import { etapesTriees, minuteurEtape } from '../domain/session';
+import { blocs as calculerBlocs, type Bloc } from '../domain/reorganisation';
+import { minuteurEtape } from '../domain/session';
 import { BarreMinuteurs, useMinuteurs } from '../ui/minuteurs';
-import { ContenuEtape } from './EtapeSession';
+import { ContenuBloc } from './EtapeSession';
 
 const LIBELLES_ECRAN = {
   actif: 'Écran maintenu allumé',
@@ -19,9 +20,9 @@ const LIBELLES_ECRAN = {
 export function Cuisine({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
   const reglages = useReglages();
   const ecran = useEcranAllume(true);
-  const minuteurs = useMinuteurs();
+  const chronos = useMinuteurs();
   const prefixe = cles.prefixeEtapes(plan.mois, semaine.numero);
-  const { coches, basculer } = useCochages(prefixe);
+  const { coches } = useCochages(prefixe);
   const cleChrono = `batch-chrono-${plan.mois}-${semaine.numero}`;
   const [debut, setDebut] = useState<number | null>(() => {
     try {
@@ -35,9 +36,12 @@ export function Cuisine({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
   const prochaineRef = useRef<HTMLLIElement>(null);
 
   const session = semaine.session;
-  const etapes = session ? etapesTriees(session) : [];
-  const prochaine = etapes.find((e) => !coches.has(cles.etape(plan.mois, semaine.numero, e.id)));
-  const ecoule = debut === null ? null : Math.floor((minuteurs.maintenant - debut) / 60_000);
+  // Une carte par bloc : une étape seule, ou plusieurs étapes fusionnées (une case pour toutes).
+  const liste = session ? calculerBlocs(session) : [];
+  const cle = (id: string) => cles.etape(plan.mois, semaine.numero, id);
+  const blocFait = (b: Bloc) => b.membres.every((m) => coches.has(cle(m.id)));
+  const prochaine = liste.find((b) => !blocFait(b));
+  const ecoule = debut === null ? null : Math.floor((chronos.maintenant - debut) / 60_000);
 
   useEffect(() => {
     prochaineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -75,7 +79,7 @@ export function Cuisine({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
     );
   }
 
-  const faites = etapes.length - etapes.filter((e) => !coches.has(cles.etape(plan.mois, semaine.numero, e.id))).length;
+  const faites = liste.filter(blocFait).length;
 
   return (
     <div className="cuisine">
@@ -85,7 +89,7 @@ export function Cuisine({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
         </Link>
         <div className="cuisine-infos">
           <strong>
-            {faites}/{etapes.length}
+            {faites}/{liste.length}
           </strong>
           {ecoule !== null &&
             (ecoule >= 0 ? (
@@ -113,40 +117,47 @@ export function Cuisine({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
         )}
       </div>
       <p className={`petit ${ecran === 'actif' ? 'discret' : 'texte-alerte'}`}>{LIBELLES_ECRAN[ecran]}</p>
-      <BarreMinuteurs m={minuteurs} />
+      <BarreMinuteurs m={chronos} />
 
       <ol className="cuisine-etapes">
-        {etapes.map((e) => {
-          const cle = cles.etape(plan.mois, semaine.numero, e.id);
-          const fait = coches.has(cle);
-          const estProchaine = prochaine?.id === e.id;
-          const enRetard = !fait && ecoule !== null && minutesDepuisDebut(e.debut) <= ecoule;
-          const m = minuteurEtape(e);
+        {liste.map((b) => {
+          const fait = blocFait(b);
+          const estProchaine = prochaine?.id === b.id;
+          const enRetard = !fait && ecoule !== null && minutesDepuisDebut(b.debut) <= ecoule;
+          const minuteurs = b.membres.map((m) => minuteurEtape(m)).filter((m) => m !== null);
           return (
             <li
-              key={e.id}
+              key={b.id}
               ref={estProchaine ? prochaineRef : undefined}
               className={`cuisine-etape ${fait ? 'fait' : ''} ${estProchaine ? 'prochaine' : ''} ${enRetard ? 'a-faire-maintenant' : ''}`}
             >
               <label className="cuisine-case">
-                <input type="checkbox" checked={fait} onChange={() => void basculer(cle)} aria-label={`Étape ${e.debut} faite`} />
+                <input
+                  type="checkbox"
+                  checked={fait}
+                  onChange={() => b.membres.forEach((m) => void cocher(cle(m.id), !fait))}
+                  aria-label={`Étape ${b.debut} faite`}
+                />
               </label>
               <div>
-                <ContenuEtape
-                  e={e}
+                <ContenuBloc
+                  bloc={b}
                   session={session}
                   reglages={reglages}
-                  heureHorloge={heureDebut ? heureHorloge(heureDebut, e.debut) : undefined}
+                  heureHorloge={heureDebut ? heureHorloge(heureDebut, b.debut) : undefined}
                 />
-                {m && !fait && (
-                  <button
-                    type="button"
-                    className="bouton-secondaire bouton-minuteur"
-                    onClick={() => minuteurs.demarrer(e.id, m.libelle.slice(0, 40), m.dureeMin, m.rappelsMin)}
-                  >
-                    ⏱ Minuteur {m.dureeMin} min{m.rappelsMin.length > 0 ? ` (rappels à ${m.rappelsMin.join(', ')} min)` : ''}
-                  </button>
-                )}
+                {!fait &&
+                  minuteurs.map((m) => (
+                    <button
+                      key={m.etape}
+                      type="button"
+                      className="bouton-secondaire bouton-minuteur"
+                      onClick={() => chronos.demarrer(m.etape, m.libelle.slice(0, 40), m.dureeMin, m.rappelsMin)}
+                    >
+                      ⏱ {minuteurs.length > 1 ? `${m.libelle.slice(0, 24)}… ` : 'Minuteur '}
+                      {m.dureeMin} min{m.rappelsMin.length > 0 ? ` (rappels à ${m.rappelsMin.join(', ')} min)` : ''}
+                    </button>
+                  ))}
               </div>
             </li>
           );

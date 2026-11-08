@@ -67,9 +67,15 @@ export async function supprimerPlan(mois: string, base: BaseBatch = db): Promise
 
 const clePerso = (mois: string, semaine: number) => `${mois}|${semaine}`;
 
+/** Retire les champs techniques d'un enregistrement (tous les champs de la personnalisation sont gardés). */
+function versPersonnalisation(p: PersonnalisationEnregistree): Personnalisation {
+  const { cle: _c, mois: _m, semaine: _s, majLe: _t, appareil: _a, supprimeLe: _d, ...perso } = p;
+  return perso;
+}
+
 export async function lirePersonnalisation(mois: string, semaine: number, base: BaseBatch = db): Promise<Personnalisation | null> {
   const p = await base.personnalisations.get(clePerso(mois, semaine));
-  return p ? { ordre: p.ordre, heures: p.heures } : null;
+  return p ? versPersonnalisation(p) : null;
 }
 
 /** Enregistre l'ordre modifié d'une semaine ; null = revenir à l'ordre du plan. */
@@ -81,13 +87,13 @@ export async function enregistrerPersonnalisation(
 ): Promise<void> {
   const cle = clePerso(mois, semaine);
   if (perso === null) await base.personnalisations.delete(cle);
-  else await base.personnalisations.put({ cle, mois, semaine, ordre: perso.ordre, heures: perso.heures, ...meta() });
+  else await base.personnalisations.put({ ...perso, cle, mois, semaine, ...meta() });
 }
 
 /** Personnalisations d'un mois, par numéro de semaine (pour l'export du plan). */
 export async function personnalisationsDuMois(mois: string, base: BaseBatch = db): Promise<Map<number, Personnalisation>> {
   const liste = await base.personnalisations.where('mois').equals(mois).toArray();
-  return new Map(liste.map((p) => [p.semaine, { ordre: p.ordre, heures: p.heures }]));
+  return new Map(liste.map((p) => [p.semaine, versPersonnalisation(p)]));
 }
 
 export async function listerPlans(base: BaseBatch = db): Promise<PlanEnregistre[]> {

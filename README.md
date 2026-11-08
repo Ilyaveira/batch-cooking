@@ -42,18 +42,27 @@ Pour passer d'un appareil à l'autre :
 - pour ne transmettre qu'un plan avec l'ordre d'étapes modifié : **Réglages → Plans importés →
   Exporter**, puis l'importer sur l'autre appareil (ou le redonner à Claude).
 
-### Réorganiser les étapes
+### Réorganiser et modifier les étapes
 
 Écran **Session → Réorganiser** :
 - changer le **n°** d'une étape la déplace à cette place (15 → 8 : l'ancienne 8 devient la 9…) ;
-  les flèches ↑ / ↓ la déplacent d'un cran ;
-- une étape déplacée **prend l'heure de l'étape dont elle prend la place**, pour que la liste reste
-  chronologique (le planning et les retards du mode cuisine restent cohérents) ;
+  les flèches ↑ / ↓ la déplacent d'un cran. Une étape déplacée **prend l'heure de l'étape dont
+  elle prend la place**, pour que la liste reste chronologique ;
 - changer l'**heure** d'une étape (ex. `0:25`, `0h25`, `25`) la replace d'elle-même ;
-- **Revenir à l'ordre du plan** annule toutes les modifications de la semaine.
+- **✎ Modifier** : réécrire la consigne ; une ligne commençant par `-` devient un sous-point,
+  `**…**` met un ingrédient en gras ;
+- **Scinder en deux** (dans « Modifier ») : coupure proposée après la 1ʳᵉ phrase, modifiable. La
+  1ʳᵉ partie garde l'heure, les durées et le minuteur ; la 2ᵉ commence à la même heure, juste après,
+  sans minuteur ;
+- **Fusionner avec la suivante** : une seule carte (et une seule case à cocher), à l'heure de la
+  1ʳᵉ ; chaque étape garde ses durées et son minuteur (deux boutons en mode cuisine). **Séparer**
+  défait la fusion ;
+- **Revenir au plan importé** annule toutes les modifications de la semaine.
 
-Les modifications sont gardées à part du plan importé : elles survivent à un réimport (les
-étapes qui n'existent plus sont ignorées, les nouvelles s'insèrent selon leur heure).
+Les modifications sont gardées à part du plan importé : elles survivent à un réimport (les étapes
+non touchées reprennent le texte du nouveau plan ; les étapes disparues sont ignorées, les
+nouvelles s'insèrent selon leur heure). L'export du plan les inclut (champ `groupe` pour les
+fusions, voir SCHEMA.md).
 
 ## Ce que fait l'app (MVP)
 
@@ -63,7 +72,7 @@ Les modifications sont gardées à part du plan importé : elles survivent à un
 | Repas | « Quand manger quoi » du dimanche soir au jeudi (réglable), avec J+n et un statut de conservation par repas. |
 | Courses | Quantités agrégées par ingrédient, triées par rayon, à cocher ; détail par recette. |
 | Placard | Liste mensuelle à vérifier, avec ce que les recettes du mois en utilisent. |
-| Session | « À sortir » (frigo, congélateur, légumes, placard, ustensiles) et étapes horodatées par tranches de 30 min, poste en couleur, ingrédients en gras. Bouton **Réorganiser** : changer le n° d'une étape, la monter/descendre, ou changer son heure. |
+| Session | « À sortir » (frigo, congélateur, légumes, placard, ustensiles) et étapes horodatées par tranches de 30 min, poste en couleur, ingrédients en gras. Bouton **Réorganiser** : déplacer une étape (n° ou flèches), changer son heure, modifier son texte, la scinder, ou la fusionner avec la suivante. |
 | Mode cuisine | Gros texte, écran maintenu allumé (Screen Wake Lock), minuteurs avec rappels (vibration + bip), étapes à cocher, chrono de session. **Heure de début** facultative : les étapes affichent alors l'heure réelle (14:30, 14:35…). |
 | Recettes | Bibliothèque (recherche, filtres végétarien / féculent / saison), fiche avec portions ajustables. |
 | Réglages | Personnes et aliments exclus, durées de conservation (avec leur source), four (chaleur tournante, écart), Cook Expert, sauvegarde. |
@@ -108,7 +117,7 @@ npm run valider -- fixtures/novembre-2026-semaine1.json
 
 - `npm run build` régénère `public/schema/plan-v1.schema.json`, vérifie les types et produit `dist/`.
 - `npm run valider -- <fichier>` vérifie un plan en ligne de commande.
-- Parcours de bout en bout sur mobile émulé : voir l'en-tête de `tests/e2e/parcours-mobile.cjs`.
+- Parcours de bout en bout sur mobile émulé : `tests/e2e/parcours-mobile.cjs`, `reorganisation-mobile.cjs`, `edition-mobile.cjs` (mode d'emploi en tête de chaque fichier).
 - Icônes : `node scripts/generer-icones.mjs` (Playwright requis).
 
 ### Structure du projet
@@ -123,7 +132,7 @@ src/
 │  ├─ courses.ts      Agrégation des courses et placard du mois
 │  ├─ session.ts      À sortir, étapes, Gantt (couloirs/segments), minuteurs
 │  ├─ calendrier.ts   Quand manger quoi et statuts de conservation
-│  ├─ reorganisation.ts Ordre et heures des étapes modifiés dans l'app
+│  ├─ reorganisation.ts Étapes modifiées dans l'app (ordre, heures, textes, scissions, fusions)
 │  ├─ exclusions.ts   Aliments exclus par personne
 │  └─ reglages.ts     Réglages par défaut sourcés, températures du four
 ├─ data/              IndexedDB (Dexie) et fonctions d'accès (import, cases cochées, sauvegarde)

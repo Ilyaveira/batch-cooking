@@ -162,6 +162,7 @@ Chaque étape :
 | `texte` | texte | Consigne ; ingrédients en `**gras**`. |
 | `details` | textes, facultatif | Sous-points (plaque 1, plaque 2…). |
 | `recettes` | ids, facultatif | Recettes concernées. |
+| `groupe` | id, facultatif | Étapes fusionnées : des étapes **consécutives** de même `groupe` s'affichent comme une seule carte, à l'heure de la première ; chacune garde ses durées et son minuteur. Donner la même heure aux membres. |
 
 ## `placard[]`
 

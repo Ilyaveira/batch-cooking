@@ -28,6 +28,8 @@ Points clés :
 - Session : une liste unique d'`etapes` (heure `h:mm`, `poste`, `actifMin`, `passifMin`,
   `rappelsMin`, `alerte`, ingrédients en `**gras**`) et des `taches` (lignes du Gantt). Le Gantt est
   déduit des étapes : ne pas le fournir séparément.
+- Pour présenter plusieurs actions comme une seule étape tout en gardant leurs minuteurs (ex.
+  lancer lentilles et riz ensemble), leur donner le même `groupe` et la même heure.
 - Les températures des étapes sont écrites pour un four traditionnel (sinon préciser
   `session.modeFour`) ; l'app affiche la valeur en chaleur tournante.
 - Vérifier avant de livrer : `npm run valider -- plan.json` dans le dépôt de l'app, ou l'écran

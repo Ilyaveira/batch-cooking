@@ -618,6 +618,11 @@
                         "type": "string",
                         "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
                       }
+                    },
+                    "groupe": {
+                      "description": "Étapes fusionnées : des étapes consécutives de même « groupe » s’affichent comme une seule carte (même heure conseillée), chacune gardant ses durées et son minuteur.",
+                      "type": "string",
+                      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
                     }
                   },
                   "required": [

@@ -37,7 +37,7 @@ const verifier = (cond, message) => {
   const n13 = page.getByLabel('Numéro de l’étape 13');
   await n13.fill('9');
   await n13.press('Enter');
-  await page.getByText('Ordre modifié sur cet appareil.').waitFor();
+  await page.getByText('Étapes modifiées sur cet appareil.').waitFor();
   await page.waitForFunction(() => document.querySelectorAll('.ligne-reorganisation .etape-texte')[8]?.textContent.includes('300 g de brocolis'));
   verifier((await heureLigne(9)) === '0:57', 'brocolis vapeur devenu n° 9 à 0:57');
   verifier((await texteLigne(10)).includes('Deux plaques'), 'les deux plaques décalées en n° 10');
@@ -91,8 +91,8 @@ const verifier = (cond, message) => {
   // Retour à l'ordre du plan.
   await page.goto(`${URL}#/semaine/1/session`);
   await page.getByRole('button', { name: 'Réorganiser' }).click();
-  await page.getByRole('button', { name: 'Revenir à l’ordre du plan' }).click();
-  await page.waitForFunction(() => !document.body.textContent.includes('Ordre modifié sur cet appareil.'));
+  await page.getByRole('button', { name: 'Revenir au plan importé' }).click();
+  await page.waitForFunction(() => !document.body.textContent.includes('Étapes modifiées sur cet appareil.'));
   verifier((await texteLigne(13)).includes('300 g de brocolis') && (await heureLigne(13)) === '1:13', 'ordre du plan rétabli');
 
   const deborde = await page.evaluate(() => [...document.querySelectorAll('.contenu, .carte')].some((e) => e.scrollWidth > e.clientWidth + 1));

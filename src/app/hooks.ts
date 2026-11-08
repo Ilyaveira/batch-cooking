@@ -57,7 +57,12 @@ export function useCochages(prefixe: string) {
  * undefined = en cours de chargement ; null = ordre du plan.
  */
 export function usePersonnalisation(mois: string | undefined, semaine: number) {
-  return useLiveQuery(async () => (mois ? lirePersonnalisation(mois, semaine) : null), [mois, semaine]);
+  // useLiveQuery renvoie l'ancien résultat pendant qu'il relance la requête : on vérifie que la
+  // réponse correspond bien au mois et à la semaine demandés, sinon l'écran afficherait
+  // brièvement l'ordre du plan avant l'ordre modifié.
+  const cle = `${mois}|${semaine}`;
+  const r = useLiveQuery(async () => ({ cle, perso: mois ? await lirePersonnalisation(mois, semaine) : null }), [cle]);
+  return r?.cle === cle ? r.perso : undefined;
 }
 
 /** Semaine « en cours » : la dernière dont la session est passée (ou la première). */

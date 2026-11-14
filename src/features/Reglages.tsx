@@ -5,7 +5,9 @@ import { usePlans, useReglages } from '../app/hooks';
 import {
   enregistrerReglages,
   exporterSauvegarde,
+  listerInfosIngredients,
   listerNotes,
+  listerRecettesPerso,
   personnalisationsDuMois,
   restaurerSauvegarde,
   supprimerPlan,
@@ -13,6 +15,7 @@ import {
 } from '../data/depot';
 import { JOURS } from '../domain/constantes';
 import { moisLong } from '../domain/dates';
+import { planExporte } from '../domain/modifications';
 import { exporterNotes } from '../domain/notation';
 import { planAvecPersonnalisations } from '../domain/reorganisation';
 import { db } from '../data/db';
@@ -247,8 +250,16 @@ export function Reglages() {
                 <button
                   type="button"
                   className="bouton-secondaire"
-                  title="Plan au format SCHEMA.md, avec l’ordre et les heures d’étapes modifiés dans l’app"
-                  onClick={async () => telecharger(`plan-${p.id}.json`, planAvecPersonnalisations(p.plan, await personnalisationsDuMois(p.id)))}
+                  title="Plan au format SCHEMA.md, avec les étapes et les ingrédients modifiés dans l’app"
+                  onClick={async () =>
+                    telecharger(
+                      `plan-${p.id}.json`,
+                      planAvecPersonnalisations(
+                        planExporte(p.plan, await listerInfosIngredients(), await listerRecettesPerso(p.id)),
+                        await personnalisationsDuMois(p.id),
+                      ),
+                    )
+                  }
                 >
                   Exporter
                 </button>

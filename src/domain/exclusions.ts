@@ -5,6 +5,11 @@ import type { PersonneReglages } from './reglages';
 /** Minuscules, sans accents, mots au singulier approximatif (s/x final retiré). */
 export function normaliser(texte: string): string[] {
   return texte
+    // Les ligatures ne se décomposent pas en NFD : « Œufs » deviendrait « ufs ».
+    .replace(/œ/g, 'oe')
+    .replace(/Œ/g, 'Oe')
+    .replace(/æ/g, 'ae')
+    .replace(/Æ/g, 'Ae')
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()

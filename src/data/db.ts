@@ -4,6 +4,7 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { Ingredient, Plan, Recette } from '../domain/schema/plan';
 import type { Reglages } from '../domain/reglages';
+import type { InfosIngredientPerso, RecettePerso } from '../domain/modifications';
 import type { Note } from '../domain/notation';
 import type { Personnalisation } from '../domain/reorganisation';
 
@@ -26,6 +27,12 @@ export type PersonnalisationEnregistree = Meta & Personnalisation & { cle: strin
 /** Une note donnée par une personne à une recette, un jour donné (historique). */
 export type NoteEnregistree = Meta & Note;
 
+/** Infos d'un ingrédient modifiées ou ingrédient créé dans l'app (pour tous les mois). */
+export type IngredientPersoEnregistre = Meta & InfosIngredientPerso;
+
+/** Lignes d'ingrédients d'une recette modifiées. Clé : « mois|semaine|recette » (semaine 0 = mois). */
+export type RecettePersoEnregistree = Meta & RecettePerso & { cle: string };
+
 export class BaseBatch extends Dexie {
   plans!: EntityTable<PlanEnregistre, 'id'>;
   recettes!: EntityTable<RecetteEnregistree, 'id'>;
@@ -33,6 +40,8 @@ export class BaseBatch extends Dexie {
   reglages!: EntityTable<ReglagesEnregistres, 'cle'>;
   personnalisations!: EntityTable<PersonnalisationEnregistree, 'cle'>;
   notations!: EntityTable<NoteEnregistree, 'id'>;
+  ingredientsPerso!: EntityTable<IngredientPersoEnregistre, 'id'>;
+  recettesPerso!: EntityTable<RecettePersoEnregistree, 'cle'>;
 
   constructor(nom = 'batch-cooking') {
     super(nom);
@@ -46,6 +55,8 @@ export class BaseBatch extends Dexie {
     this.version(2).stores({ personnalisations: 'cle, mois, majLe' });
     // v3 : notation des recettes (historique). Les données v1/v2 sont conservées.
     this.version(3).stores({ notations: 'id, recetteId, majLe' });
+    // v4 : modifications des ingrédients (infos globales, lignes de recettes par mois/semaine).
+    this.version(4).stores({ ingredientsPerso: 'id, majLe', recettesPerso: 'cle, mois, majLe' });
   }
 }
 

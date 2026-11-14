@@ -32,6 +32,7 @@ import { aSortir, etapesTriees, planning } from '../domain/session';
 import { Case, TexteEtape } from '../ui/composants';
 import { ContenuBloc, EnteteBloc } from './EtapeSession';
 import { Gantt } from './Gantt';
+import { EditeurIngredient } from './EditeurIngredient';
 import { OngletsSemaine } from './OngletsSemaine';
 
 /** Regroupe les blocs par tranches de 30 minutes. */
@@ -355,6 +356,7 @@ export function Session({
   const { coches: sortis, basculer: basculerSortir } = useCochages(prefixeSortir);
   const cleSortir = (element: string) => cles.sortir(plan.mois, semaine.numero, element);
   const [reorganiser, setReorganiser] = useState(false);
+  const [ingredientEnEdition, setIngredientEnEdition] = useState<string | null>(null);
   const a = aSortir(plan, semaine);
   const elementsASortir = [
     ...a.parStockage.flatMap((g) => g.lignes.map((l) => cleSortir(l.cle))),
@@ -395,12 +397,28 @@ export function Session({
               {g.lignes.map((l) => {
                 const c = cleSortir(l.cle);
                 return (
-                  <Case key={l.cle} coche={sortis.has(c)} onChange={() => void basculerSortir(c)}>
-                    <span className="ligne-courses">
-                      <span>{l.ingredient.nom}</span>
-                      <span className={`quantite ${l.incomplete ? 'quantite-incomplete' : ''}`}>{texteQuantite(l)}</span>
-                    </span>
-                  </Case>
+                  <div key={l.cle} className="ligne-avec-edition">
+                    <div className="ligne-avec-edition-haut">
+                      <Case coche={sortis.has(c)} onChange={() => void basculerSortir(c)}>
+                        <span className="ligne-courses">
+                          <span>{l.ingredient.nom}</span>
+                          <span className={`quantite ${l.incomplete ? 'quantite-incomplete' : ''}`}>{texteQuantite(l)}</span>
+                        </span>
+                      </Case>
+                      <button
+                        type="button"
+                        className="bouton-crayon"
+                        aria-label={`Modifier ${l.ingredient.nom}`}
+                        aria-expanded={ingredientEnEdition === l.cle}
+                        onClick={() => setIngredientEnEdition(ingredientEnEdition === l.cle ? null : l.cle)}
+                      >
+                        ✎
+                      </button>
+                    </div>
+                    {ingredientEnEdition === l.cle && (
+                      <EditeurIngredient ingredient={l.ingredient} rangementEnPremier fermer={() => setIngredientEnEdition(null)} />
+                    )}
+                  </div>
                 );
               })}
             </div>

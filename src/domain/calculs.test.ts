@@ -200,6 +200,8 @@ describe('exclusions', () => {
     expect(contientExclusion('Riz basmati', 'riz complet')).toBe(false);
     expect(contientExclusion('Riz complet', 'Riz complet')).toBe(true);
     expect(contientExclusion('Tomates séchées', 'tomates confites')).toBe(false);
+    expect(contientExclusion('Œufs', 'oeufs')).toBe(true);
+    expect(contientExclusion('Oeufs durs', 'œuf')).toBe(true);
   });
   it('ne vérifie que les personnes qui mangent le plat', () => {
     const personnes = [

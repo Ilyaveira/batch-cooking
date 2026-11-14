@@ -9,13 +9,13 @@ import { PastilleStatut } from '../ui/composants';
 import { nomsPersonnes } from './Accueil';
 import { OngletsSemaine } from './OngletsSemaine';
 
-function Repas({ plan, e }: { plan: Plan; e: EntreeRepas }) {
+function Repas({ plan, e, semaine }: { plan: Plan; e: EntreeRepas; semaine: number }) {
   const t = e.conservation.type;
   const tous = e.pour.length === plan.personnes.length;
   return (
     <li className={`repas repas-${e.statut}`}>
       <div className="repas-titre">
-        <Link to={`/recettes/${e.recette.id}`}>{e.recette.nom}</Link>
+        <Link to={`/recettes/${e.recette.id}?semaine=${semaine}`}>{e.recette.nom}</Link>
         <PastilleStatut statut={e.statut} jours={e.jours} />
       </div>
       <p className="discret">
@@ -74,7 +74,7 @@ export function SemaineRepas({ plan, semaine }: { plan: Plan; semaine: Semaine }
                     <h3>{moment === 'midi' ? 'Midi' : 'Soir'}</h3>
                     <ul className="liste-repas">
                       {j.repas[moment].map((e, i) => (
-                        <Repas key={i} plan={plan} e={e} />
+                        <Repas key={i} plan={plan} e={e} semaine={semaine.numero} />
                       ))}
                     </ul>
                   </div>

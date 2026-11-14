@@ -5,7 +5,8 @@ import { facteurPortions } from './portions';
 import type { Ingredient, Plan, Semaine } from './schema/plan';
 import { familleDe, formaterQuantite, versBase, type Famille } from './unites';
 
-export type Provenance = { origine: string; quantiteBase: number | null };
+/** D'où vient une quantité : une recette (avec son id) ou un achat en plus. */
+export type Provenance = { origine: string; quantiteBase: number | null; recetteId?: string };
 
 export type LigneCalculee = {
   /** Clé stable « ingredient|famille » (sert aussi aux cases cochées). */
@@ -27,7 +28,7 @@ class Agregateur {
   private lignes = new Map<string, LigneCalculee>();
   constructor(private ingredients: Map<string, Ingredient>) {}
 
-  ajouter(idIngredient: string, quantite: number | null, unite: Parameters<typeof familleDe>[0], origine: string) {
+  ajouter(idIngredient: string, quantite: number | null, unite: Parameters<typeof familleDe>[0], origine: string, recetteId?: string) {
     const ingredient = this.ingredients.get(idIngredient);
     if (!ingredient) throw new Error(`Ingrédient inconnu : ${idIngredient}`);
     const famille = familleDe(unite);
@@ -43,7 +44,7 @@ class Agregateur {
     };
     if (base === null) ligne.incomplete = true;
     else ligne.quantiteBase = (ligne.quantiteBase ?? 0) + base;
-    ligne.provenances.push({ origine, quantiteBase: base });
+    ligne.provenances.push(recetteId ? { origine, quantiteBase: base, recetteId } : { origine, quantiteBase: base });
     this.lignes.set(cle, ligne);
   }
 
@@ -65,7 +66,7 @@ export function besoinsSemaine(plan: Plan, semaine: Semaine): LigneCalculee[] {
     if (!recette) throw new Error(`Recette inconnue : ${plat.recette}`);
     const f = facteurPortions(plat.portions, recette.portions);
     for (const l of recette.ingredients) {
-      ag.ajouter(l.ingredient, l.quantite === null ? null : l.quantite * f, l.unite, recette.nom);
+      ag.ajouter(l.ingredient, l.quantite === null ? null : l.quantite * f, l.unite, recette.nom, recette.id);
     }
   }
   for (const l of semaine.coursesSupplementaires ?? []) {

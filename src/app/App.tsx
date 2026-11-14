@@ -11,6 +11,7 @@ import { Reglages } from '../features/Reglages';
 import { SemaineRepas } from '../features/SemaineRepas';
 import { Session } from '../features/Session';
 import { AucunPlan, EnChargement } from '../ui/composants';
+import { planDeSemaine } from '../domain/modifications';
 import { appliquerPersonnalisation } from '../domain/reorganisation';
 import { semaineCourante, usePersonnalisation, usePlanActif } from './hooks';
 
@@ -52,12 +53,15 @@ function VersSemaineCourante({ vue }: { vue: 'courses' | 'session' }) {
 /** Fournit le plan et la semaine demandée aux écrans de semaine. */
 function AvecSemaine({ vue }: { vue: 'repas' | 'courses' | 'session' | 'cuisine' }) {
   const { n } = useParams();
-  const { plan } = usePlanActif();
-  const perso = usePersonnalisation(plan?.mois, Number(n));
-  if (plan === undefined || perso === undefined) return <EnChargement />;
-  if (plan === null) return <AucunPlan />;
-  const semaine = plan.semaines.find((s) => s.numero === Number(n));
-  if (!semaine) return <Navigate replace to="/" />;
+  const { plan: planMois, recettesPerso } = usePlanActif();
+  const perso = usePersonnalisation(planMois?.mois, Number(n));
+  if (planMois === undefined || perso === undefined) return <EnChargement />;
+  if (planMois === null) return <AucunPlan />;
+  const semaineMois = planMois.semaines.find((s) => s.numero === Number(n));
+  if (!semaineMois) return <Navigate replace to="/" />;
+  // Plan vu depuis cette semaine : ses modifications ponctuelles d'ingrédients en plus du mois.
+  const plan = planDeSemaine(planMois, semaineMois, recettesPerso).plan;
+  const semaine = plan.semaines.find((s) => s.numero === Number(n))!;
   // Session telle qu'affichée : ordre et heures modifiés dans l'app (le plan importé reste intact).
   const affichee = semaine.session ? { ...semaine, session: appliquerPersonnalisation(semaine.session, perso) } : semaine;
   if (vue === 'repas') return <SemaineRepas plan={plan} semaine={semaine} />;

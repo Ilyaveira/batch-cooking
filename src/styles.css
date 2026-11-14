@@ -1056,3 +1056,83 @@ textarea {
   margin: 0.2rem 0 0;
   font-style: italic;
 }
+
+/* Modification des ingrédients */
+.ligne-avec-edition {
+  border-bottom: 1px solid var(--bordure);
+}
+.ligne-avec-edition:last-child {
+  border-bottom: none;
+}
+.ligne-avec-edition-haut {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+.ligne-avec-edition-haut .case {
+  flex: 1;
+  border-bottom: none;
+}
+.bouton-crayon {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 1.15rem;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.panneau-edition {
+  background: var(--fond);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 0.6rem 0.7rem;
+  margin: 0.3rem 0 0.7rem;
+}
+.liste-edition {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.liste-edition > li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--bordure);
+}
+.ligne-edition-titre {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ligne-edition-titre .actions {
+  margin: 0;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+.ligne-edition-champs {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+.ligne-edition-champs input:last-child {
+  grid-column: 1 / -1;
+}
+.ligne-edition-champs input,
+.ligne-edition-champs select {
+  min-width: 0;
+}
+.choix-ingredient {
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  border-radius: 10px;
+  padding: 0.5rem;
+  margin: 0.4rem 0;
+}
+.creer-ingredient {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.3rem 0;
+}

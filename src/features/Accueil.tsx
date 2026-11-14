@@ -13,7 +13,7 @@ export function nomsPersonnes(plan: Plan, ids: string[] | undefined): string | n
 }
 
 export function Accueil() {
-  const { plan, choisir } = usePlanActif();
+  const { plan, choisir, ignorees } = usePlanActif();
   const plans = usePlans();
   const reglages = useReglages();
   if (plan === undefined) return <EnChargement />;
@@ -47,6 +47,17 @@ export function Accueil() {
         )}
       </header>
 
+      {ignorees.length > 0 && (
+        <div className="alerte" role="alert">
+          <strong>Modifications d’ingrédients ignorées après le réimport :</strong>
+          <ul>
+            {ignorees.map((m, i) => (
+              <li key={i}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {exclusions.length > 0 && (
         <div className="alerte" role="alert">
           <strong>Aliments exclus repérés :</strong>
@@ -79,7 +90,7 @@ export function Accueil() {
                 const pour = nomsPersonnes(plan, p.pour);
                 return (
                   <li key={i}>
-                    <Link to={`/recettes/${r.id}?portions=${p.portions}`}>{r.nom}</Link>
+                    <Link to={`/recettes/${r.id}?portions=${p.portions}&semaine=${s.numero}`}>{r.nom}</Link>
                     <span className="etiquettes">
                       <span className="etiquette">{p.portions} portions</span>
                       {(p.repas?.length ?? 0) >= 2 && <span className="etiquette etiquette-double">en double</span>}

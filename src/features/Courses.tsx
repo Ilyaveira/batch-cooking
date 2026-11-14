@@ -8,14 +8,22 @@ import { coursesSemaine, texteQuantite, type LigneCalculee } from '../domain/cou
 import type { Plan, Semaine } from '../domain/schema/plan';
 import { formaterQuantite } from '../domain/unites';
 import { Case } from '../ui/composants';
+import { EditeurIngredient } from './EditeurIngredient';
 import { OngletsSemaine } from './OngletsSemaine';
 
-function Detail({ l }: { l: LigneCalculee }) {
+function Detail({ l, semaine }: { l: LigneCalculee; semaine: number }) {
   return (
     <ul className="detail">
       {l.provenances.map((p, i) => (
         <li key={i}>
-          {p.origine} : {p.quantiteBase === null ? 'quantité non précisée' : formaterQuantite(p.quantiteBase, l.famille)}
+          {p.recetteId ? (
+            <Link to={`/recettes/${p.recetteId}?semaine=${semaine}`} title="Ouvrir la recette pour modifier la quantité">
+              {p.origine}
+            </Link>
+          ) : (
+            p.origine
+          )}{' '}
+          : {p.quantiteBase === null ? 'quantité non précisée' : formaterQuantite(p.quantiteBase, l.famille)}
         </li>
       ))}
     </ul>
@@ -27,6 +35,7 @@ export function Courses({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
   const prefixe = cles.prefixeCourses(plan.mois, semaine.numero);
   const { coches, basculer } = useCochages(prefixe);
   const [details, setDetails] = useState(false);
+  const [enEdition, setEnEdition] = useState<string | null>(null);
   const total = rayons.reduce((n, r) => n + r.lignes.length, 0);
   const faites = rayons.reduce((n, r) => n + r.lignes.filter((l) => coches.has(prefixe + l.cle)).length, 0);
 
@@ -50,13 +59,32 @@ export function Courses({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
         <section key={r.rayon} className="carte">
           <h2>{LIBELLES_RAYON[r.rayon]}</h2>
           {r.lignes.map((l) => (
-            <Case key={l.cle} coche={coches.has(prefixe + l.cle)} onChange={() => void basculer(prefixe + l.cle)}>
-              <span className="ligne-courses">
-                <span>{l.ingredient.nom}</span>
-                <span className={`quantite ${l.incomplete ? 'quantite-incomplete' : ''}`}>{texteQuantite(l)}</span>
-              </span>
-              {details && <Detail l={l} />}
-            </Case>
+            <div key={l.cle} className="ligne-avec-edition">
+              <div className="ligne-avec-edition-haut">
+                <Case coche={coches.has(prefixe + l.cle)} onChange={() => void basculer(prefixe + l.cle)}>
+                  <span className="ligne-courses">
+                    <span>{l.ingredient.nom}</span>
+                    <span className={`quantite ${l.incomplete ? 'quantite-incomplete' : ''}`}>{texteQuantite(l)}</span>
+                  </span>
+                </Case>
+                <button
+                  type="button"
+                  className="bouton-crayon"
+                  aria-label={`Modifier ${l.ingredient.nom}`}
+                  aria-expanded={enEdition === l.cle}
+                  onClick={() => setEnEdition(enEdition === l.cle ? null : l.cle)}
+                >
+                  ✎
+                </button>
+              </div>
+              {(details || enEdition === l.cle) && <Detail l={l} semaine={semaine.numero} />}
+              {enEdition === l.cle && (
+                <>
+                  <p className="discret petit">Pour changer une quantité, ouvrez la recette concernée ci-dessus.</p>
+                  <EditeurIngredient ingredient={l.ingredient} fermer={() => setEnEdition(null)} />
+                </>
+              )}
+            </div>
           ))}
         </section>
       ))}

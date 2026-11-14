@@ -8,6 +8,11 @@ import {
   cochagesAvecPrefixe,
   decocherTout,
   ajouterNotes,
+  enregistrerInfosIngredient,
+  enregistrerRecettePerso,
+  listerInfosIngredients,
+  listerRecettesPerso,
+  oublierInfosIngredient,
   enregistrerPersonnalisation,
   listerNotes,
   notesDeRecette,
@@ -171,5 +176,35 @@ describe('dépôt', () => {
     await decocherTout(cles.prefixeSortir('2026-11', 1), base);
     expect((await cochagesAvecPrefixe(cles.prefixeSortir('2026-11', 1), base)).size).toBe(0);
     expect((await cochagesAvecPrefixe(cles.prefixeCourses('2026-11', 1), base)).size).toBe(1);
+  });
+
+  it('modifications d’ingrédients : infos globales gardées avec le plan supprimé, recettes du mois effacées, sauvegarde', async () => {
+    await importerPlan(fixturePlan(), base);
+    await enregistrerInfosIngredient({ id: 'lait-coco', stockage: 'frigo' }, base);
+    await enregistrerInfosIngredient({ id: 'lait-coco', nom: 'Lait de coco léger' }, base);
+    await enregistrerInfosIngredient({ id: 'potimarron', nom: 'Potimarron', rayon: 'fruits-legumes', cree: true }, base);
+    expect(await listerInfosIngredients(base)).toEqual([
+      { id: 'lait-coco', stockage: 'frigo', nom: 'Lait de coco léger' },
+      { id: 'potimarron', nom: 'Potimarron', rayon: 'fruits-legumes', cree: true },
+    ]);
+    await enregistrerRecettePerso('2026-11', 1, 'cake-tomates-sechees-feta', [{ ingredient: 'feta', quantite: 80, unite: 'g' }], base);
+    expect(await listerRecettesPerso('2026-11', base)).toEqual([
+      { mois: '2026-11', semaine: 1, recetteId: 'cake-tomates-sechees-feta', ingredients: [{ ingredient: 'feta', quantite: 80, unite: 'g' }] },
+    ]);
+
+    const s = JSON.parse(JSON.stringify(await exporterSauvegarde(base)));
+    const autre = new BaseBatch(`test-${Math.random()}`);
+    await restaurerSauvegarde(s, autre);
+    expect(await listerInfosIngredients(autre)).toHaveLength(2);
+    expect(await listerRecettesPerso('2026-11', autre)).toHaveLength(1);
+    await autre.delete();
+
+    await supprimerPlan('2026-11', base);
+    expect(await listerRecettesPerso('2026-11', base)).toEqual([]);
+    expect(await listerInfosIngredients(base)).toHaveLength(2);
+    await oublierInfosIngredient('lait-coco', base);
+    await oublierInfosIngredient('potimarron', base); // un ingrédient créé n'est pas oublié
+    expect((await listerInfosIngredients(base)).map((i) => i.id)).toEqual(['potimarron']);
+    await expect(enregistrerInfosIngredient({ id: 'x', nom: '', rayon: 'epicerie', cree: true }, base)).rejects.toThrow(/nom/);
   });
 });

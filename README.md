@@ -42,6 +42,21 @@ Pour passer d'un appareil à l'autre :
 - pour ne transmettre qu'un plan avec l'ordre d'étapes modifié : **Réglages → Plans importés →
   Exporter**, puis l'importer sur l'autre appareil (ou le redonner à Claude).
 
+### Modifier les ingrédients
+
+- **Fiche recette → ✎ Modifier les ingrédients** : quantité (vide = non précisée), unité, note,
+  **Retirer**, **Remplacer** (par un ingrédient du plan ou un nouveau, créé avec son rayon),
+  **+ Ajouter un ingrédient**. À l'enregistrement : **cette semaine seulement** (depuis une semaine)
+  ou **tout le mois** (et la bibliothèque) ; un remplacement peut être reporté dans les autres
+  recettes de la semaine ou du mois. Les textes des étapes ne sont pas réécrits : l'app indique
+  ceux qui citent encore l'ancien ingrédient. « Revenir à la recette du plan » annule.
+- **Courses et « à sortir » → ✎** sur un article : nom, rayon, lieu de rangement, produit de
+  placard. **Mémorisé sur le téléphone pour tous les mois** (par identifiant d'ingrédient). Dans les
+  courses, le détail par recette mène à la fiche pour corriger une quantité.
+- Priorité : semaine > mois > plan importé. Conservé au réimport (une ligne citant un ingrédient
+  disparu est ignorée et signalée sur l'accueil). L'export du plan inclut tout : une modification
+  « semaine » y devient une recette dérivée `<id>-s<n>`.
+
 ### Réorganiser et modifier les étapes
 
 Écran **Session → Réorganiser** :
@@ -126,7 +141,7 @@ npm run valider -- fixtures/novembre-2026-semaine1.json
 
 - `npm run build` régénère `public/schema/plan-v1.schema.json`, vérifie les types et produit `dist/`.
 - `npm run valider -- <fichier>` vérifie un plan en ligne de commande.
-- Parcours de bout en bout sur mobile émulé : `tests/e2e/parcours-mobile.cjs`, `reorganisation-mobile.cjs`, `edition-mobile.cjs`, `dependances-mobile.cjs`, `v2-mobile.cjs`, `sortir-mobile.cjs` (mode d'emploi en tête de chaque fichier).
+- Parcours de bout en bout sur mobile émulé : `tests/e2e/parcours-mobile.cjs`, `reorganisation-mobile.cjs`, `edition-mobile.cjs`, `dependances-mobile.cjs`, `v2-mobile.cjs`, `sortir-mobile.cjs`, `ingredients-mobile.cjs` (mode d'emploi en tête de chaque fichier).
 - Icônes : `node scripts/generer-icones.mjs` (Playwright requis).
 
 ### Structure du projet
@@ -142,6 +157,7 @@ src/
 │  ├─ session.ts      À sortir, étapes, Gantt (couloirs/segments), minuteurs
 │  ├─ calendrier.ts   Quand manger quoi et statuts de conservation
 │  ├─ gantt.ts        Géométrie du planning (barres, graduations)
+│  ├─ modifications.ts Ingrédients modifiés dans l'app (infos, recettes semaine / mois, export)
 │  ├─ notation.ts     Notes : moyennes, tri, filtres, export
 │  ├─ reorganisation.ts Étapes modifiées dans l'app (ordre, heures, textes, scissions, fusions)
 │  ├─ exclusions.ts   Aliments exclus par personne

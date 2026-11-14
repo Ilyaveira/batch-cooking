@@ -2,7 +2,8 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useState } from 'react';
 import { db } from '../data/db';
-import { cochagesAvecPrefixe, cocher, lirePersonnalisation, lireReglages } from '../data/depot';
+import { cochagesAvecPrefixe, cocher, lirePersonnalisation, lireReglages, listerInfosIngredients, listerRecettesPerso } from '../data/depot';
+import { appliquerInfosIngredients, appliquerRecettesMois, type InfosIngredientPerso, type RecettePerso } from '../domain/modifications';
 import { REGLAGES_DEFAUT, type Reglages } from '../domain/reglages';
 import type { Plan, Semaine } from '../domain/schema/plan';
 
@@ -29,16 +30,37 @@ export function usePlans() {
 }
 
 /** Plan affiché : celui choisi, sinon le plus récent. `null` = aucun plan importé. */
-export function usePlanActif(): { plan: Plan | null | undefined; choisir: (mois: string) => void } {
+export type PlanActif = {
+  /** Plan effectif : plan importé + infos d'ingrédients + modifications de recettes du mois. */
+  plan: Plan | null | undefined;
+  /** Plan tel qu'importé (pour « revenir à la recette du plan » et l'export). */
+  planImporte: Plan | null | undefined;
+  infos: InfosIngredientPerso[];
+  /** Modifications de recettes du mois affiché (mois et semaines). */
+  recettesPerso: RecettePerso[];
+  /** Lignes de modifications ignorées (ingrédient disparu après un réimport). */
+  ignorees: string[];
+  choisir: (mois: string) => void;
+};
+
+export function usePlanActif(): PlanActif {
   const plans = usePlans();
   const [choisi, setChoisi] = useState(() => lireLocal(CLE_PLAN_ACTIF));
   const choisir = useCallback((mois: string) => {
     ecrireLocal(CLE_PLAN_ACTIF, mois);
     setChoisi(mois);
   }, []);
-  if (plans === undefined) return { plan: undefined, choisir };
-  const p = plans.find((x) => x.id === choisi) ?? plans[0];
-  return { plan: p?.plan ?? null, choisir };
+  const p = plans === undefined ? undefined : (plans.find((x) => x.id === choisi) ?? plans[0] ?? null);
+  const mois = p?.id;
+  const infos = useLiveQuery(() => listerInfosIngredients());
+  // Même précaution que usePersonnalisation : ignorer une réponse qui concerne un autre mois.
+  const r = useLiveQuery(async () => ({ mois, persos: mois ? await listerRecettesPerso(mois) : [] }), [mois]);
+  const persos = r && r.mois === mois ? r.persos : undefined;
+  const chargement = { plan: undefined, planImporte: undefined, infos: [], recettesPerso: [], ignorees: [], choisir };
+  if (p === undefined || infos === undefined || persos === undefined) return chargement;
+  if (p === null) return { ...chargement, plan: null, planImporte: null };
+  const { plan, ignorees } = appliquerRecettesMois(appliquerInfosIngredients(p.plan, infos), persos);
+  return { plan, planImporte: p.plan, infos, recettesPerso: persos, ignorees, choisir };
 }
 
 export function useReglages(): Reglages {

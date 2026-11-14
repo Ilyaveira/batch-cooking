@@ -1,5 +1,6 @@
 // Fonctions d'accès aux données : l'interface ne parle jamais directement à Dexie.
 import { REGLAGES_DEFAUT, type Reglages } from '../domain/reglages';
+import { verifierIngredientCree, type InfosIngredientPerso, type RecettePerso } from '../domain/modifications';
 import { verifierNote, type Note } from '../domain/notation';
 import type { Personnalisation } from '../domain/reorganisation';
 import type { Plan } from '../domain/schema/plan';
@@ -8,7 +9,9 @@ import {
   meta,
   type BaseBatch,
   type Cochage,
+  type IngredientPersoEnregistre,
   type NoteEnregistree,
+  type RecettePersoEnregistree,
   type PersonnalisationEnregistree,
   type PlanEnregistre,
   type RecetteEnregistree,
@@ -60,11 +63,74 @@ export async function importerPlan(plan: Plan, base: BaseBatch = db): Promise<Bi
 }
 
 export async function supprimerPlan(mois: string, base: BaseBatch = db): Promise<void> {
-  await base.transaction('rw', base.plans, base.cochages, base.personnalisations, async () => {
+  await base.transaction('rw', [base.plans, base.cochages, base.personnalisations, base.recettesPerso], async () => {
     await base.plans.delete(mois);
     await base.cochages.where('cle').startsWith(`${mois}|`).delete();
     await base.personnalisations.where('mois').equals(mois).delete();
+    // Les infos d'ingrédients (globales) et les notes sont gardées.
+    await base.recettesPerso.where('mois').equals(mois).delete();
   });
+}
+
+// --- Modifications des ingrédients ---
+
+const cleRecettePerso = (mois: string, semaine: number, recetteId: string) => `${mois}|${semaine}|${recetteId}`;
+
+export async function listerInfosIngredients(base: BaseBatch = db): Promise<InfosIngredientPerso[]> {
+  return (await base.ingredientsPerso.toArray()).map(({ majLe: _m, appareil: _a, supprimeLe: _s, ...i }) => i);
+}
+
+/** Enregistre les infos d'un ingrédient (fusionnées avec celles déjà modifiées) ou un ingrédient créé. */
+export async function enregistrerInfosIngredient(infos: InfosIngredientPerso, base: BaseBatch = db): Promise<void> {
+  if (infos.cree) verifierIngredientCree(infos);
+  const existant = await base.ingredientsPerso.get(infos.id);
+  await base.ingredientsPerso.put({ ...(existant ?? {}), ...infos, ...meta() });
+}
+
+/** Revient aux infos du plan (un ingrédient créé, lui, garde sa définition). */
+export async function oublierInfosIngredient(id: string, base: BaseBatch = db): Promise<void> {
+  const existant = await base.ingredientsPerso.get(id);
+  if (existant?.cree) return;
+  await base.ingredientsPerso.delete(id);
+}
+
+export async function listerRecettesPerso(mois: string, base: BaseBatch = db): Promise<RecettePerso[]> {
+  return (await base.recettesPerso.where('mois').equals(mois).toArray()).map(
+    ({ cle: _c, majLe: _m, appareil: _a, supprimeLe: _s, ...r }) => r,
+  );
+}
+
+/** Enregistre (ou, avec `null`, annule) la modification d'une recette pour une semaine ou le mois. */
+export async function enregistrerRecettePerso(
+  mois: string,
+  semaine: number,
+  recetteId: string,
+  ingredients: RecettePerso['ingredients'] | null,
+  base: BaseBatch = db,
+): Promise<void> {
+  const cle = cleRecettePerso(mois, semaine, recetteId);
+  if (ingredients === null) await base.recettesPerso.delete(cle);
+  else await base.recettesPerso.put({ cle, mois, semaine, recetteId, ingredients, ...meta() });
+}
+
+export async function enregistrerRecettesPerso(persos: RecettePerso[], base: BaseBatch = db): Promise<void> {
+  const m = meta();
+  await base.recettesPerso.bulkPut(persos.map((p) => ({ ...p, cle: cleRecettePerso(p.mois, p.semaine, p.recetteId), ...m })));
+}
+
+/** Modification permanente hors plan actif : met à jour la recette de la bibliothèque. */
+export async function modifierRecetteBibliotheque(
+  recetteId: string,
+  ingredients: RecettePerso['ingredients'],
+  catalogue: InfosIngredientPerso[],
+  base: BaseBatch = db,
+): Promise<void> {
+  const r = await base.recettes.get(recetteId);
+  if (!r) throw new Error(`Recette « ${recetteId} » introuvable.`);
+  const connus = new Map(r.ingredients.map((i) => [i.id, i]));
+  for (const c of catalogue) if (c.cree && c.nom && c.rayon && !connus.has(c.id)) connus.set(c.id, { id: c.id, nom: c.nom, rayon: c.rayon, ...(c.stockage ? { stockage: c.stockage } : {}) });
+  const utilises = [...new Set(ingredients.map((l) => l.ingredient))].map((id) => connus.get(id)).filter((i) => i !== undefined);
+  await base.recettes.put({ ...r, recette: { ...r.recette, ingredients }, ingredients: utilises, ...meta() });
 }
 
 const clePerso = (mois: string, semaine: number) => `${mois}|${semaine}`;
@@ -170,6 +236,9 @@ export type Sauvegarde = {
   personnalisations?: PersonnalisationEnregistree[];
   /** Absent des sauvegardes faites avant la notation des recettes. */
   notations?: NoteEnregistree[];
+  /** Absents des sauvegardes faites avant la modification des ingrédients. */
+  ingredientsPerso?: IngredientPersoEnregistre[];
+  recettesPerso?: RecettePersoEnregistree[];
 };
 
 export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegarde> {
@@ -183,6 +252,8 @@ export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegar
     reglages: await lireReglages(base),
     personnalisations: await base.personnalisations.toArray(),
     notations: await base.notations.toArray(),
+    ingredientsPerso: await base.ingredientsPerso.toArray(),
+    recettesPerso: await base.recettesPerso.toArray(),
   };
 }
 
@@ -190,7 +261,16 @@ export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegar
 export async function restaurerSauvegarde(s: Sauvegarde, base: BaseBatch = db): Promise<void> {
   if (s.format !== 'batch-cooking-sauvegarde' || s.version !== 1)
     throw new Error('Ce fichier n’est pas une sauvegarde de l’application (format ou version inconnus).');
-  const tables = [base.plans, base.recettes, base.cochages, base.reglages, base.personnalisations, base.notations];
+  const tables = [
+    base.plans,
+    base.recettes,
+    base.cochages,
+    base.reglages,
+    base.personnalisations,
+    base.notations,
+    base.ingredientsPerso,
+    base.recettesPerso,
+  ];
   await base.transaction('rw', tables, async () => {
     await Promise.all(tables.map((t) => t.clear()));
     await base.plans.bulkPut(s.plans);
@@ -198,6 +278,8 @@ export async function restaurerSauvegarde(s: Sauvegarde, base: BaseBatch = db): 
     await base.cochages.bulkPut(s.cochages);
     await base.personnalisations.bulkPut(s.personnalisations ?? []);
     await base.notations.bulkPut(s.notations ?? []);
+    await base.ingredientsPerso.bulkPut(s.ingredientsPerso ?? []);
+    await base.recettesPerso.bulkPut(s.recettesPerso ?? []);
     await enregistrerReglages(s.reglages, base);
   });
 }

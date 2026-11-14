@@ -1,8 +1,9 @@
 # Texte à reporter dans la skill `plan-batch-cooking`
 
-La skill contient un schéma JSON « provisoire ». Remplacez sa section **« JSON pour
-l'application »** par le texte ci-dessous, puis joignez `SCHEMA.md` à la conversation (ou au projet
-Claude) chaque mois.
+Résumé des consignes que la skill doit contenir pour l'application. Une version complète de la
+skill (SKILL.md, 14/11/2026) intégrant ces consignes a été fournie à part : elle n'est pas dans ce
+dépôt public, car elle contient des données personnelles (objectifs, aliments exclus). Joignez
+`SCHEMA.md` à la conversation (ou au projet Claude) chaque mois.
 
 ---
 

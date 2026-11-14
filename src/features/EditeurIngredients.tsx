@@ -9,7 +9,7 @@ import {
   enregistrerRecettesPerso,
   modifierRecetteBibliotheque,
 } from '../data/depot';
-import { LIBELLES_RAYON, RAYONS, UNITES, type Rayon, type Unite } from '../domain/constantes';
+import { LIBELLES_RAYON, LIBELLES_UNITE, RAYONS, UNITES, type Rayon, type Unite } from '../domain/constantes';
 import { normaliser } from '../domain/exclusions';
 import {
   creerIdIngredient,
@@ -25,23 +25,6 @@ import {
 } from '../domain/modifications';
 import type { Ingredient, LigneIngredient, Plan, Recette, Semaine } from '../domain/schema/plan';
 
-const LIBELLES_UNITE: Record<Unite, string> = {
-  g: 'g',
-  kg: 'kg',
-  ml: 'ml',
-  cl: 'cl',
-  l: 'l',
-  piece: 'pièce(s)',
-  botte: 'botte(s)',
-  gousse: 'gousse(s)',
-  tranche: 'tranche(s)',
-  sachet: 'sachet(s)',
-  boite: 'boîte(s)',
-  pot: 'pot(s)',
-  cas: 'c. à s.',
-  cac: 'c. à c.',
-  pincee: 'pincée(s)',
-};
 
 export type Portee = 'semaine' | 'mois' | 'bibliotheque';
 
@@ -178,12 +161,12 @@ export function EditeurIngredients({
 
       const messages: string[] = [];
       if (portee === 'bibliotheque' || !planMois) {
-        await modifierRecetteBibliotheque(recette.id, finales, [...infos, ...crees.map((c) => ({ ...c, cree: true }))]);
+        await modifierRecetteBibliotheque(recette.id, finales, [...infos, ...crees.map((c) => ({ id: c.id, nom: c.nom, rayon: c.rayon, cree: true }))]);
         messages.push('Recette de la bibliothèque modifiée.');
       } else {
         const numero = portee === 'semaine' && semaine ? semaine.numero : 0;
         await enregistrerRecettePerso(planMois.mois, numero, recette.id, finales);
-        if (numero === 0) await modifierRecetteBibliotheque(recette.id, finales, [...infos, ...crees.map((c) => ({ ...c, cree: true }))]);
+        if (numero === 0) await modifierRecetteBibliotheque(recette.id, finales, [...infos, ...crees.map((c) => ({ id: c.id, nom: c.nom, rayon: c.rayon, cree: true }))]);
         messages.push(numero ? `Modifiée pour la semaine ${numero} seulement.` : 'Modifiée pour tout le mois (et la bibliothèque).');
 
         // Remplacements à reporter dans les autres recettes de la même portée.

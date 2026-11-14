@@ -19,9 +19,13 @@ Ce document décrit le fichier JSON que l'application **Batch cooking** importe.
 >    si une quantité est pesée après préparation, dis-le dans `note`.
 > 3. Si une quantité n'est pas connue, mets `"quantite": null` : n'estime rien.
 > 4. Ne mets **aucune valeur nutritionnelle ni durée de conservation** : l'application les calcule
->    (table Ciqual, Open Food Facts) ou les lit dans ses réglages. Indique seulement le type de
->    conservation de chaque recette (`conservation`) et, si tu le connais avec certitude, le code
->    Ciqual de l'ingrédient (`ciqual.code`).
+>    (table Ciqual 2025) ou les lit dans ses réglages. Indique seulement le type de conservation de
+>    chaque recette (`conservation`) et, pour chaque ingrédient, le code Ciqual 2025 de l'aliment
+>    **dans l'état où la quantité est écrite** (`ciqual.code` : lentilles **sèches**, riz **cru**,
+>    pois chiches **égouttés**…) quand la correspondance est claire ; sinon, laisse-le absent.
+>    Marque `feculent: true` les féculents (riz, pâtes, semoule, légumineuses, pommes de terre,
+>    pain) : leur part varie selon la personne. Ne donne `masseParUnite` (g par pièce, cuillère,
+>    boîte…) que si elle est connue (indiquée sur l'emballage, par exemple) : jamais estimée.
 > 5. Les courses et la liste « à sortir » ne se fournissent pas : l'application les calcule à
 >    partir des recettes. N'ajoute dans `coursesSupplementaires` que ce qui n'est dans aucune
 >    recette (fruits du dessert, herbes achetées en botte pour toute la semaine…).
@@ -98,9 +102,10 @@ ingrédient dans tout le plan évite ces doublons.
 | `rayon` | liste | Rayon du magasin. |
 | `stockage` | liste, facultatif | Où il est rangé (« à sortir »). |
 | `placard` | booléen, facultatif | `true` : épices, huiles, sauces… vérifiés une fois par mois, absents des courses hebdomadaires. |
-| `ciqual.code` | texte de chiffres, facultatif | Code Ciqual de l'aliment **dans l'état où il est pesé** (cru le plus souvent). |
+| `ciqual.code` | texte de chiffres, facultatif | Code de l'aliment dans la [table Ciqual 2025](https://doi.org/10.57745/RDMHWY) **dans l'état où la quantité est écrite** (cru, sec, égoutté, chair sans peau…). Sans code, l'ingrédient n'est pas compté dans la nutrition et c'est signalé. |
+| `feculent` | booléen, facultatif | `true` pour un féculent (riz, pâtes, semoule, légumineuses, pommes de terre, pain…) : dans les portions, sa part suit le coefficient « féculents » de chaque personne (réglages de l'app). |
 | `off.codeBarres` | 8 à 14 chiffres, facultatif | Produit de marque sur Open Food Facts. |
-| `masseParUnite` | objet, facultatif | Grammes par unité non massique, si connus avec certitude : `{"piece": 60}`. Sert au calcul nutritionnel. |
+| `masseParUnite` | objet, facultatif | Grammes par unité non massique, si connus avec certitude : `{"piece": 60}`, `{"boite": 240}` (égouttée), `{"ml": 1.03}` (densité, vaut pour ml, cl et l). Sert au calcul nutritionnel ; sans elle, les lignes dans cette unité ne sont pas comptées. Peut aussi être saisie dans l'app (ingrédient → ✎). |
 
 ## `recettes[]`
 

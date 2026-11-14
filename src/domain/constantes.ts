@@ -108,3 +108,22 @@ export const MODES_FOUR = ['traditionnel', 'chaleur-tournante'] as const;
 export type ModeFour = (typeof MODES_FOUR)[number];
 
 export const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'] as const;
+
+/** Libellés des unités dans les listes de choix. */
+export const LIBELLES_UNITE: Record<Unite, string> = {
+  g: 'g',
+  kg: 'kg',
+  ml: 'ml',
+  cl: 'cl',
+  l: 'l',
+  piece: 'pièce(s)',
+  botte: 'botte(s)',
+  gousse: 'gousse(s)',
+  tranche: 'tranche(s)',
+  sachet: 'sachet(s)',
+  boite: 'boîte(s)',
+  pot: 'pot(s)',
+  cas: 'c. à s.',
+  cac: 'c. à c.',
+  pincee: 'pincée(s)',
+};

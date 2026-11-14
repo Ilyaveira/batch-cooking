@@ -15,15 +15,27 @@ import {
   type PersonnalisationEnregistree,
   type PlanEnregistre,
   type RecetteEnregistree,
+  type EtiquettesPersoEnregistrees,
 } from './db';
+import type { EtiquettesPerso } from '../domain/bibliotheque';
 
 export async function lireReglages(base: BaseBatch = db): Promise<Reglages> {
   const r = await base.reglages.get('reglages');
-  return r ? { ...REGLAGES_DEFAUT, ...r.valeur } : REGLAGES_DEFAUT;
+  return r ? { ...REGLAGES_DEFAUT, ...r.valeur, nutrition: { ...REGLAGES_DEFAUT.nutrition, ...r.valeur.nutrition } } : REGLAGES_DEFAUT;
 }
 
 export async function enregistrerReglages(valeur: Reglages, base: BaseBatch = db): Promise<void> {
   await base.reglages.put({ cle: 'reglages', valeur, ...meta() });
+}
+
+/**
+ * Modifie les réglages à partir de leur version enregistrée (transaction) : deux saisies rapides
+ * ne s'écrasent pas, contrairement à un enregistrement fait depuis l'état affiché.
+ */
+export async function modifierReglages(f: (r: Reglages) => Reglages, base: BaseBatch = db): Promise<void> {
+  await base.transaction('rw', base.reglages, async () => {
+    await enregistrerReglages(f(await lireReglages(base)), base);
+  });
 }
 
 export type BilanImport = { mois: string; remplace: boolean; recettes: number; personnesAjoutees: string[] };
@@ -218,6 +230,18 @@ export async function notesDeRecette(recetteId: string, base: BaseBatch = db): P
   return (await base.notations.where('recetteId').equals(recetteId).toArray()).filter((n) => !n.supprimeLe).map(versNote);
 }
 
+// --- Étiquettes des recettes ---
+
+export async function listerEtiquettesPerso(base: BaseBatch = db): Promise<EtiquettesPerso[]> {
+  return (await base.etiquettesPerso.toArray()).map(({ majLe: _m, appareil: _a, supprimeLe: _s, ...e }) => e);
+}
+
+/** Enregistre les étiquettes d'une recette ; null = revenir à celles du plan. */
+export async function enregistrerEtiquettes(recetteId: string, e: Omit<EtiquettesPerso, 'recetteId'> | null, base: BaseBatch = db): Promise<void> {
+  if (!e) await base.etiquettesPerso.delete(recetteId);
+  else await base.etiquettesPerso.put({ recetteId, saisons: e.saisons, libres: e.libres, ...meta() });
+}
+
 function versNote(n: NoteEnregistree): Note {
   const { majLe: _m, appareil: _a, supprimeLe: _s, ...note } = n;
   return note;
@@ -239,6 +263,8 @@ export type Sauvegarde = {
   /** Absents des sauvegardes faites avant la modification des ingrédients. */
   ingredientsPerso?: IngredientPersoEnregistre[];
   recettesPerso?: RecettePersoEnregistree[];
+  /** Absent des sauvegardes faites avant les étiquettes modifiables. */
+  etiquettesPerso?: EtiquettesPersoEnregistrees[];
 };
 
 export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegarde> {
@@ -254,6 +280,7 @@ export async function exporterSauvegarde(base: BaseBatch = db): Promise<Sauvegar
     notations: await base.notations.toArray(),
     ingredientsPerso: await base.ingredientsPerso.toArray(),
     recettesPerso: await base.recettesPerso.toArray(),
+    etiquettesPerso: await base.etiquettesPerso.toArray(),
   };
 }
 
@@ -270,6 +297,7 @@ export async function restaurerSauvegarde(s: Sauvegarde, base: BaseBatch = db): 
     base.notations,
     base.ingredientsPerso,
     base.recettesPerso,
+    base.etiquettesPerso,
   ];
   await base.transaction('rw', tables, async () => {
     await Promise.all(tables.map((t) => t.clear()));
@@ -280,6 +308,7 @@ export async function restaurerSauvegarde(s: Sauvegarde, base: BaseBatch = db): 
     await base.notations.bulkPut(s.notations ?? []);
     await base.ingredientsPerso.bulkPut(s.ingredientsPerso ?? []);
     await base.recettesPerso.bulkPut(s.recettesPerso ?? []);
+    await base.etiquettesPerso.bulkPut(s.etiquettesPerso ?? []);
     await enregistrerReglages(s.reglages, base);
   });
 }

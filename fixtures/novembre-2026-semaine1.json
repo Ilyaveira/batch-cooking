@@ -17,75 +17,117 @@
     {
       "id": "butternut",
       "nom": "Butternut",
-      "rayon": "fruits-legumes"
+      "rayon": "fruits-legumes",
+      "ciqual": {
+        "code": "20138"
+      }
     },
     {
       "id": "brocolis",
       "nom": "Brocolis",
-      "rayon": "fruits-legumes"
+      "rayon": "fruits-legumes",
+      "ciqual": {
+        "code": "20057"
+      }
     },
     {
       "id": "oignon-rouge",
       "nom": "Oignons rouges",
-      "rayon": "fruits-legumes"
+      "rayon": "fruits-legumes",
+      "ciqual": {
+        "code": "20238"
+      }
     },
     {
       "id": "carotte",
       "nom": "Carottes",
-      "rayon": "fruits-legumes"
+      "rayon": "fruits-legumes",
+      "ciqual": {
+        "code": "20009"
+      }
     },
     {
       "id": "citron-jaune",
       "nom": "Citrons jaunes",
-      "rayon": "fruits-legumes"
+      "rayon": "fruits-legumes",
+      "ciqual": {
+        "code": "13009"
+      }
     },
     {
       "id": "radis",
       "nom": "Radis",
-      "rayon": "fruits-legumes"
+      "rayon": "fruits-legumes",
+      "ciqual": {
+        "code": "20045"
+      }
     },
     {
       "id": "endive",
       "nom": "Endives",
-      "rayon": "fruits-legumes"
+      "rayon": "fruits-legumes",
+      "ciqual": {
+        "code": "20026"
+      }
     },
     {
       "id": "clementine",
       "nom": "Clémentines",
-      "rayon": "fruits-legumes"
+      "rayon": "fruits-legumes",
+      "ciqual": {
+        "code": "13024"
+      }
     },
     {
       "id": "ciboulette",
       "nom": "Ciboulette",
       "rayon": "fruits-legumes",
-      "stockage": "frigo"
+      "stockage": "frigo",
+      "ciqual": {
+        "code": "11003"
+      }
     },
     {
       "id": "menthe",
       "nom": "Menthe",
       "rayon": "fruits-legumes",
-      "stockage": "frigo"
+      "stockage": "frigo",
+      "ciqual": {
+        "code": "11027"
+      }
     },
     {
       "id": "coriandre",
       "nom": "Coriandre",
       "rayon": "fruits-legumes",
-      "stockage": "frigo"
+      "stockage": "frigo",
+      "ciqual": {
+        "code": "11094"
+      }
     },
     {
       "id": "blanc-poulet",
       "nom": "Blancs de poulet",
-      "rayon": "boucherie-poissonnerie"
+      "rayon": "boucherie-poissonnerie",
+      "ciqual": {
+        "code": "36017"
+      }
     },
     {
       "id": "feta",
       "nom": "Feta",
-      "rayon": "cremerie"
+      "rayon": "cremerie",
+      "ciqual": {
+        "code": "12066"
+      }
     },
     {
       "id": "oeuf",
       "nom": "Œufs",
-      "rayon": "cremerie"
+      "rayon": "cremerie",
+      "ciqual": {
+        "code": "22000"
+      }
     },
     {
       "id": "fromage-blanc",
@@ -105,17 +147,26 @@
     {
       "id": "lentilles-vertes",
       "nom": "Lentilles vertes",
-      "rayon": "epicerie"
+      "rayon": "epicerie",
+      "ciqual": {
+        "code": "20585"
+      },
+      "feculent": true
     },
     {
       "id": "pois-chiches",
       "nom": "Pois chiches (boîte de 400 g)",
-      "rayon": "epicerie"
+      "rayon": "epicerie",
+      "ciqual": {
+        "code": "20532"
+      },
+      "feculent": true
     },
     {
       "id": "semoule-tipiak",
       "nom": "Semoule parfumée Tipiak « épices du monde »",
-      "rayon": "epicerie"
+      "rayon": "epicerie",
+      "feculent": true
     },
     {
       "id": "tomates-sechees",
@@ -126,28 +177,44 @@
       "id": "lait-coco",
       "nom": "Lait de coco",
       "rayon": "epicerie",
-      "stockage": "placard"
+      "stockage": "placard",
+      "ciqual": {
+        "code": "18041"
+      }
     },
     {
       "id": "gingembre-poudre",
       "nom": "Gingembre en poudre",
-      "rayon": "epicerie"
+      "rayon": "epicerie",
+      "ciqual": {
+        "code": "11006"
+      }
     },
     {
       "id": "coriandre-poudre",
       "nom": "Coriandre en poudre",
-      "rayon": "epicerie"
+      "rayon": "epicerie",
+      "ciqual": {
+        "code": "11026"
+      }
     },
     {
       "id": "oignons-eminces-surgeles",
       "nom": "Oignons émincés surgelés",
-      "rayon": "surgeles"
+      "rayon": "surgeles",
+      "ciqual": {
+        "code": "20235"
+      }
     },
     {
       "id": "riz-basmati",
       "nom": "Riz basmati",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "9119"
+      },
+      "feculent": true
     },
     {
       "id": "farine",
@@ -159,25 +226,37 @@
       "id": "levure-chimique",
       "nom": "Levure chimique",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11046"
+      }
     },
     {
       "id": "fecule-mais",
       "nom": "Fécule de maïs",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "9510"
+      }
     },
     {
       "id": "huile-olive",
       "nom": "Huile d'olive",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "17270"
+      }
     },
     {
       "id": "huile-sesame",
       "nom": "Huile de sésame",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "17400"
+      }
     },
     {
       "id": "graines-sesame",
@@ -189,19 +268,28 @@
       "id": "sauce-soja",
       "nom": "Sauce soja",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11104"
+      }
     },
     {
       "id": "sauce-poisson",
       "nom": "Sauce poisson (nuoc-mâm)",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11194"
+      }
     },
     {
       "id": "vinaigre-vin-rouge",
       "nom": "Vinaigre de vin rouge",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11220"
+      }
     },
     {
       "id": "vinaigre-riz",
@@ -213,31 +301,46 @@
       "id": "moutarde",
       "nom": "Moutarde",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11013"
+      }
     },
     {
       "id": "miel",
       "nom": "Miel",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "31008"
+      }
     },
     {
       "id": "sucre",
       "nom": "Sucre",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "31016"
+      }
     },
     {
       "id": "tahini",
       "nom": "Tahini",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "15203"
+      }
     },
     {
       "id": "bouillon-volaille",
       "nom": "Bouillon de volaille en cubes",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11174"
+      }
     },
     {
       "id": "ail-hache-surgele",
@@ -249,31 +352,46 @@
       "id": "ail-poudre",
       "nom": "Ail en poudre",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11023"
+      }
     },
     {
       "id": "cumin",
       "nom": "Cumin",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11042"
+      }
     },
     {
       "id": "paprika",
       "nom": "Paprika",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11049"
+      }
     },
     {
       "id": "curry",
       "nom": "Curry",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11005"
+      }
     },
     {
       "id": "herbes-provence",
       "nom": "Herbes de Provence",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11060"
+      }
     },
     {
       "id": "piment-flocons",
@@ -285,13 +403,19 @@
       "id": "muscade",
       "nom": "Muscade",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11048"
+      }
     },
     {
       "id": "cannelle",
       "nom": "Cannelle",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11025"
+      }
     },
     {
       "id": "sel",
@@ -303,7 +427,10 @@
       "id": "poivre",
       "nom": "Poivre",
       "rayon": "epicerie",
-      "placard": true
+      "placard": true,
+      "ciqual": {
+        "code": "11015"
+      }
     }
   ],
   "recettes": [

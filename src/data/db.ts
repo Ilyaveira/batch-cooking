@@ -6,6 +6,7 @@ import type { Ingredient, Plan, Recette } from '../domain/schema/plan';
 import type { Reglages } from '../domain/reglages';
 import type { InfosIngredientPerso, RecettePerso } from '../domain/modifications';
 import type { Note } from '../domain/notation';
+import type { EtiquettesPerso } from '../domain/bibliotheque';
 import type { Personnalisation } from '../domain/reorganisation';
 
 type Meta = { majLe: number; appareil: string; supprimeLe?: number };
@@ -33,6 +34,9 @@ export type IngredientPersoEnregistre = Meta & InfosIngredientPerso;
 /** Lignes d'ingrédients d'une recette modifiées. Clé : « mois|semaine|recette » (semaine 0 = mois). */
 export type RecettePersoEnregistree = Meta & RecettePerso & { cle: string };
 
+/** Étiquettes (saisons, libres) d'une recette modifiées dans l'app, pour tous les mois. */
+export type EtiquettesPersoEnregistrees = Meta & EtiquettesPerso;
+
 export class BaseBatch extends Dexie {
   plans!: EntityTable<PlanEnregistre, 'id'>;
   recettes!: EntityTable<RecetteEnregistree, 'id'>;
@@ -42,6 +46,7 @@ export class BaseBatch extends Dexie {
   notations!: EntityTable<NoteEnregistree, 'id'>;
   ingredientsPerso!: EntityTable<IngredientPersoEnregistre, 'id'>;
   recettesPerso!: EntityTable<RecettePersoEnregistree, 'cle'>;
+  etiquettesPerso!: EntityTable<EtiquettesPersoEnregistrees, 'recetteId'>;
 
   constructor(nom = 'batch-cooking') {
     super(nom);
@@ -57,6 +62,8 @@ export class BaseBatch extends Dexie {
     this.version(3).stores({ notations: 'id, recetteId, majLe' });
     // v4 : modifications des ingrédients (infos globales, lignes de recettes par mois/semaine).
     this.version(4).stores({ ingredientsPerso: 'id, majLe', recettesPerso: 'cle, mois, majLe' });
+    // v5 : étiquettes des recettes modifiées dans l'app (saisons, étiquettes libres).
+    this.version(5).stores({ etiquettesPerso: 'recetteId, majLe' });
   }
 }
 

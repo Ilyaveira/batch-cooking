@@ -3,10 +3,11 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { usePlanActif, useReglages } from '../app/hooks';
+import { useEtiquettesPerso, usePlanActif, useReglages } from '../app/hooks';
 import { db } from '../data/db';
 import { enregistrerRecettePerso } from '../data/depot';
-import { planDeSemaine } from '../domain/modifications';
+import { appliquerInfosIngredient, planDeSemaine } from '../domain/modifications';
+import { appliquerEtiquettes } from '../domain/bibliotheque';
 import type { Ingredient } from '../domain/schema/plan';
 import { LIBELLES_FECULENT, LIBELLES_SAISON } from '../domain/constantes';
 import { conservationRecette } from '../domain/calendrier';
@@ -16,6 +17,8 @@ import { formaterQuantiteUnite } from '../domain/unites';
 import { EnChargement } from '../ui/composants';
 import { SectionNotes } from './Notes';
 import { EditeurIngredients, type Portee } from './EditeurIngredients';
+import { EditeurEtiquettes } from './EditeurEtiquettes';
+import { SectionNutrition } from './Nutrition';
 
 export function FicheRecette() {
   const { id } = useParams();
@@ -25,7 +28,9 @@ export function FicheRecette() {
   const { plan: planMois, recettesPerso, infos } = usePlanActif();
   const [portions, setPortions] = useState<number | null>(null);
   const [edition, setEdition] = useState(false);
-  if (enreg === undefined || planMois === undefined) return <EnChargement />;
+  const [editionEtiquettes, setEditionEtiquettes] = useState(false);
+  const etiquettesPerso = useEtiquettesPerso();
+  if (enreg === undefined || planMois === undefined || etiquettesPerso === undefined) return <EnChargement />;
 
   // Contexte : la recette dans le plan affiché (vue depuis une semaine si ?semaine=n), sinon la bibliothèque.
   const semaine = planMois?.semaines.find((s) => s.numero === Number(params.get('semaine')));
@@ -38,14 +43,11 @@ export function FicheRecette() {
       </p>
     );
 
-  const r = dansPlan ?? enreg!.recette;
+  const r = appliquerEtiquettes(dansPlan ?? enreg!.recette, etiquettesPerso.get(id ?? ''));
   const catalogue: Ingredient[] = dansPlan
     ? planVu!.ingredients
     : [
-        ...enreg!.ingredients.map((i) => {
-          const p = infos.find((x) => x.id === i.id);
-          return p ? { ...i, ...(p.nom ? { nom: p.nom } : {}), ...(p.rayon ? { rayon: p.rayon } : {}), ...(p.stockage ? { stockage: p.stockage } : {}) } : i;
-        }),
+        ...enreg!.ingredients.map((i) => appliquerInfosIngredient(i, infos.find((x) => x.id === i.id))),
         ...infos.filter((p) => p.cree && p.nom && p.rayon && !enreg!.ingredients.some((i) => i.id === p.id)).map((p) => ({ id: p.id, nom: p.nom!, rayon: p.rayon! })),
       ];
   const portees: Portee[] = dansPlan ? (semaine ? ['semaine', 'mois'] : ['mois']) : ['bibliotheque'];
@@ -55,6 +57,9 @@ export function FicheRecette() {
   const ingredients = new Map(catalogue.map((i) => [i.id, i]));
   const lignes = ingredientsPourPortions(r, nb);
   const conservation = conservationRecette(r, reglages);
+  // Qui mange ce plat : depuis une semaine, les personnes du plat ; sinon tout le foyer.
+  const plat = semaine?.plats.find((p) => p.recette === r.id);
+  const mangeurs = plat?.pour ?? planMois?.personnes.map((p) => p.id) ?? reglages.personnes.map((p) => p.id);
   const four = r.four ? temperatureAffichee(r.four.temperatureC, r.four.mode, reglages.four) : null;
 
   return (
@@ -81,7 +86,13 @@ export function FicheRecette() {
               {t}
             </span>
           ))}
+          {!editionEtiquettes && (
+            <button type="button" className="bouton-lien petit" onClick={() => setEditionEtiquettes(true)}>
+              ✎ Étiquettes
+            </button>
+          )}
         </span>
+        {editionEtiquettes && <EditeurEtiquettes recette={r} modifiees={etiquettesPerso.has(r.id)} fermer={() => setEditionEtiquettes(false)} />}
       </header>
 
       <section className="carte">
@@ -209,6 +220,8 @@ export function FicheRecette() {
           )}
         </dl>
       </section>
+
+      <SectionNutrition recette={r} catalogue={catalogue} mangeurs={mangeurs} />
 
       <SectionNotes recetteId={r.id} />
 

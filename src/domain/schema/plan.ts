@@ -50,6 +50,10 @@ export const ingredientSchema = z.strictObject({
     .object({ codeBarres: z.string().regex(/^\d{8,14}$/, 'code-barres EAN de 8 à 14 chiffres attendu') })
     .optional()
     .describe('Code-barres Open Food Facts pour un produit de marque.'),
+  feculent: z
+    .boolean()
+    .optional()
+    .describe('true = féculent (riz, pâtes, semoule, légumineuses, pommes de terre, pain…) : sa part dans une portion suit le coefficient « féculents » de chaque personne.'),
   masseParUnite: z
     .partialRecord(z.enum(UNITES), z.number().positive())
     .optional()

@@ -1136,3 +1136,119 @@ textarea {
   gap: 0.5rem;
   margin: 0.3rem 0;
 }
+
+/* Nutrition */
+.etiquette-nutrition {
+  background: var(--poste-plan-fond);
+  color: var(--poste-plan-texte);
+  font-weight: 600;
+}
+.tableau-defilant {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.tableau-nutrition {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+}
+.tableau-nutrition td {
+  white-space: nowrap;
+}
+.tableau-nutrition th,
+.tableau-nutrition td {
+  padding: 0.35rem 0.25rem;
+  border-bottom: 1px solid var(--bordure);
+  text-align: right;
+  vertical-align: top;
+}
+.tableau-nutrition th[scope='row'],
+.tableau-nutrition thead th:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+.tableau-nutrition .sous-ligne {
+  font-weight: 400;
+  padding-left: 1.1rem;
+}
+.details-nutrition {
+  margin-top: 0.6rem;
+}
+.details-nutrition summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+.ligne-manque {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.ligne-manque > span {
+  min-width: 0;
+}
+.objectif {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.objectif-dans {
+  background: var(--ok-fond);
+  color: var(--ok-texte);
+}
+.objectif-sous,
+.objectif-au-dessus {
+  background: var(--limite-fond);
+  color: var(--limite-texte);
+}
+.objectif-indetermine {
+  background: var(--inconnu-fond);
+  color: var(--inconnu-texte);
+}
+.totaux-jour {
+  margin: 0.25rem 0 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  background: var(--accent-doux);
+}
+.total-personne {
+  margin: 0.15rem 0;
+}
+.liste-choix {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.liste-choix button {
+  width: 100%;
+  text-align: left;
+}
+.ligne-champs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.champ-nombre {
+  min-width: 0;
+}
+.champ-nombre input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+/* Un fieldset prend par défaut la largeur minimale de son contenu : on l'autorise à rétrécir. */
+fieldset {
+  min-width: 0;
+}
+.objectifs {
+  margin-top: 0.5rem;
+}

@@ -2,7 +2,17 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback, useEffect, useState } from 'react';
 import { db } from '../data/db';
-import { cochagesAvecPrefixe, cocher, lirePersonnalisation, lireReglages, listerInfosIngredients, listerRecettesPerso } from '../data/depot';
+import {
+  cochagesAvecPrefixe,
+  cocher,
+  lirePersonnalisation,
+  lireReglages,
+  listerEtiquettesPerso,
+  listerInfosIngredients,
+  listerRecettesPerso,
+} from '../data/depot';
+import type { EtiquettesPerso } from '../domain/bibliotheque';
+import { lireTableCiqual, type FichierCiqual, type TableCiqual } from '../domain/nutrition';
 import { appliquerInfosIngredients, appliquerRecettesMois, type InfosIngredientPerso, type RecettePerso } from '../domain/modifications';
 import { REGLAGES_DEFAUT, type Reglages } from '../domain/reglages';
 import type { Plan, Semaine } from '../domain/schema/plan';
@@ -61,6 +71,45 @@ export function usePlanActif(): PlanActif {
   if (p === null) return { ...chargement, plan: null, planImporte: null };
   const { plan, ignorees } = appliquerRecettesMois(appliquerInfosIngredients(p.plan, infos), persos);
   return { plan, planImporte: p.plan, infos, recettesPerso: persos, ignorees, choisir };
+}
+
+let promesseCiqual: Promise<TableCiqual> | null = null;
+
+/** Charge la table Ciqual 2025 (fichier pré-caché pour le hors-ligne), une seule fois. */
+export function chargerCiqual(): Promise<TableCiqual> {
+  promesseCiqual ??= fetch(`${import.meta.env.BASE_URL}data/ciqual-2025.json`)
+    .then((r) => {
+      if (!r.ok) throw new Error(`Table Ciqual indisponible (HTTP ${r.status}).`);
+      return r.json() as Promise<FichierCiqual>;
+    })
+    .then(lireTableCiqual)
+    .catch((e: unknown) => {
+      promesseCiqual = null;
+      throw e;
+    });
+  return promesseCiqual;
+}
+
+/** Table Ciqual : undefined pendant le chargement, Error en cas d'échec. */
+export function useCiqual(): TableCiqual | Error | undefined {
+  const [t, setT] = useState<TableCiqual | Error | undefined>(undefined);
+  useEffect(() => {
+    let actif = true;
+    chargerCiqual().then(
+      (x) => actif && setT(x),
+      (e: unknown) => actif && setT(e instanceof Error ? e : new Error(String(e))),
+    );
+    return () => {
+      actif = false;
+    };
+  }, []);
+  return t;
+}
+
+/** Étiquettes modifiées dans l'app, par recette. */
+export function useEtiquettesPerso(): Map<string, EtiquettesPerso> | undefined {
+  const l = useLiveQuery(() => listerEtiquettesPerso());
+  return l && new Map(l.map((e) => [e.recetteId, e]));
 }
 
 export function useReglages(): Reglages {

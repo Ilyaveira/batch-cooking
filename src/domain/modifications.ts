@@ -14,6 +14,11 @@ export type InfosIngredientPerso = {
   rayon?: Rayon;
   stockage?: Stockage;
   placard?: boolean;
+  /** Code Ciqual choisi dans l'app ; null = retirer celui du plan. */
+  ciqual?: string | null;
+  /** Masse d'une unité (g), saisie dans l'app (ex. un œuf pesé) ; remplace celle du plan pour ces unités. */
+  masseParUnite?: Ingredient['masseParUnite'];
+  feculent?: boolean;
   /** Ingrédient créé dans l'app (nom et rayon alors obligatoires). */
   cree?: boolean;
 };
@@ -26,17 +31,7 @@ export class ErreurModification extends Error {}
 /** Catalogue d'ingrédients avec les infos modifiées et les ingrédients créés dans l'app. */
 export function appliquerInfosIngredients(plan: Plan, infos: InfosIngredientPerso[]): Plan {
   const parId = new Map(infos.map((i) => [i.id, i]));
-  const ingredients: Ingredient[] = plan.ingredients.map((ing) => {
-    const p = parId.get(ing.id);
-    if (!p) return ing;
-    return {
-      ...ing,
-      ...(p.nom ? { nom: p.nom } : {}),
-      ...(p.rayon ? { rayon: p.rayon } : {}),
-      ...(p.stockage ? { stockage: p.stockage } : {}),
-      ...(p.placard !== undefined ? { placard: p.placard } : {}),
-    };
-  });
+  const ingredients: Ingredient[] = plan.ingredients.map((ing) => appliquerInfosIngredient(ing, parId.get(ing.id)));
   const connus = new Set(plan.ingredients.map((i) => i.id));
   for (const p of infos) {
     if (!p.cree || connus.has(p.id) || !p.nom || !p.rayon) continue;
@@ -46,9 +41,29 @@ export function appliquerInfosIngredients(plan: Plan, infos: InfosIngredientPers
       rayon: p.rayon,
       ...(p.stockage ? { stockage: p.stockage } : {}),
       ...(p.placard ? { placard: true } : {}),
+      ...(p.ciqual ? { ciqual: { code: p.ciqual } } : {}),
+      ...(p.masseParUnite && Object.keys(p.masseParUnite).length ? { masseParUnite: p.masseParUnite } : {}),
+      ...(p.feculent ? { feculent: true } : {}),
     });
   }
   return { ...plan, ingredients };
+}
+
+/** Applique les infos modifiées à un ingrédient (plan ou bibliothèque). */
+export function appliquerInfosIngredient(ing: Ingredient, p: InfosIngredientPerso | undefined): Ingredient {
+  if (!p) return ing;
+  const r: Ingredient = {
+    ...ing,
+    ...(p.nom ? { nom: p.nom } : {}),
+    ...(p.rayon ? { rayon: p.rayon } : {}),
+    ...(p.stockage ? { stockage: p.stockage } : {}),
+    ...(p.placard !== undefined ? { placard: p.placard } : {}),
+    ...(p.ciqual ? { ciqual: { code: p.ciqual } } : {}),
+    ...(p.masseParUnite && Object.keys(p.masseParUnite).length ? { masseParUnite: { ...ing.masseParUnite, ...p.masseParUnite } } : {}),
+    ...(p.feculent !== undefined ? { feculent: p.feculent } : {}),
+  };
+  if (p.ciqual === null) delete r.ciqual;
+  return r;
 }
 
 export type ResultatApplication = { plan: Plan; ignorees: string[] };

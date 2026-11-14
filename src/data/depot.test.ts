@@ -26,6 +26,8 @@ import {
   listerPlans,
   restaurerSauvegarde,
   supprimerPlan,
+  enregistrerEtiquettes,
+  listerEtiquettesPerso,
 } from './depot';
 
 let base: BaseBatch;
@@ -206,5 +208,34 @@ describe('dépôt', () => {
     await oublierInfosIngredient('potimarron', base); // un ingrédient créé n'est pas oublié
     expect((await listerInfosIngredients(base)).map((i) => i.id)).toEqual(['potimarron']);
     await expect(enregistrerInfosIngredient({ id: 'x', nom: '', rayon: 'epicerie', cree: true }, base)).rejects.toThrow(/nom/);
+  });
+
+  it('étiquettes, objectifs et infos nutrition : gardés avec le plan supprimé, sauvegardés ; anciens réglages complétés', async () => {
+    await importerPlan(fixturePlan(), base);
+    await enregistrerEtiquettes('mujaddara', { saisons: ['automne'], libres: ['lunchbox'] }, base);
+    await enregistrerInfosIngredient({ id: 'oeuf', masseParUnite: { piece: 55 }, ciqual: '22000', feculent: false }, base);
+    const r = await lireReglages(base);
+    await enregistrerReglages(
+      { ...r, personnes: r.personnes.map((p, i) => (i === 0 ? { ...p, objectifs: { kcalMin: 1650, kcalMax: 1750 }, coefFeculents: 0.75 } : p)) },
+      base,
+    );
+    await supprimerPlan('2026-11', base);
+    expect(await listerEtiquettesPerso(base)).toEqual([{ recetteId: 'mujaddara', saisons: ['automne'], libres: ['lunchbox'] }]);
+
+    const s = JSON.parse(JSON.stringify(await exporterSauvegarde(base)));
+    const autre = new BaseBatch(`test-${Math.random()}`);
+    await restaurerSauvegarde(s, autre);
+    expect(await listerEtiquettesPerso(autre)).toHaveLength(1);
+    expect((await listerInfosIngredients(autre))[0]).toMatchObject({ id: 'oeuf', masseParUnite: { piece: 55 } });
+    expect((await lireReglages(autre)).personnes[0]).toMatchObject({ coefFeculents: 0.75, objectifs: { kcalMin: 1650 } });
+    await autre.delete();
+
+    await enregistrerEtiquettes('mujaddara', null, base);
+    expect(await listerEtiquettesPerso(base)).toEqual([]);
+
+    // Réglages enregistrés avant la nutrition (sans le champ) : seuil par défaut.
+    const { nutrition: _n, ...ancien } = await lireReglages(base);
+    await base.reglages.put({ cle: 'reglages', valeur: ancien as never, majLe: 0, appareil: 'x' });
+    expect((await lireReglages(base)).nutrition.seuilGlucidesPct).toBe(26);
   });
 });

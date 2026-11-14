@@ -14,7 +14,17 @@ export type TypeConservation = {
   note?: string;
 };
 
-export type PersonneReglages = { id: string; nom: string; exclusions: string[] };
+/** Objectifs journaliers (plages), saisis par la personne ; jamais fournis par le plan. */
+export type ObjectifsPersonne = { kcalMin?: number; kcalMax?: number; proteinesMin?: number; proteinesMax?: number };
+
+export type PersonneReglages = {
+  id: string;
+  nom: string;
+  exclusions: string[];
+  objectifs?: ObjectifsPersonne;
+  /** Part de féculents par rapport à la portion de référence (1). Ex. 0,75. Défaut : 1. */
+  coefFeculents?: number;
+};
 
 export type Reglages = {
   personnes: PersonneReglages[];
@@ -23,6 +33,8 @@ export type Reglages = {
   cookExpert: boolean;
   /** Dernier jour affiché dans « quand manger quoi » : 0 = dimanche … 4 = jeudi … 6 = samedi. */
   dernierJour: number;
+  /** Seuil personnel de « pauvre en glucides » (% de l'énergie) : pas de définition réglementaire. */
+  nutrition: { seuilGlucidesPct: number };
 };
 
 const FOODSAFETY: SourceRef = {
@@ -67,6 +79,7 @@ export const REGLAGES_DEFAUT: Reglages = {
   four: { mode: 'chaleur-tournante', decalageChaleurTournanteC: 20 },
   cookExpert: true,
   dernierJour: 4,
+  nutrition: { seuilGlucidesPct: 26 },
 };
 
 /** Température à afficher selon le four de l'utilisatrice. */

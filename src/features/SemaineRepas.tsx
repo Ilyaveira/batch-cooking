@@ -1,7 +1,9 @@
 // « Quand manger quoi » : repas du dimanche soir au dernier jour réglé, vérifiés contre
 // les durées de conservation des réglages.
 import { Link } from 'react-router-dom';
-import { useReglages } from '../app/hooks';
+import { useCiqual, useReglages } from '../app/hooks';
+import { nutritionSemaine } from '../domain/nutrition';
+import { TotauxJour } from './Nutrition';
 import { calendrierSemaine, type EntreeRepas } from '../domain/calendrier';
 import { dateLongue } from '../domain/dates';
 import type { Plan, Semaine } from '../domain/schema/plan';
@@ -45,6 +47,18 @@ function Repas({ plan, e, semaine }: { plan: Plan; e: EntreeRepas; semaine: numb
 export function SemaineRepas({ plan, semaine }: { plan: Plan; semaine: Semaine }) {
   const reglages = useReglages();
   const { jours, horsDelai } = calendrierSemaine(plan, semaine, reglages);
+  const table = useCiqual();
+  const nutrition =
+    table && !(table instanceof Error)
+      ? new Map(
+          nutritionSemaine(
+            plan,
+            semaine,
+            table,
+            plan.personnes.map((p) => ({ id: p.id, coefFeculents: reglages.personnes.find((x) => x.id === p.id)?.coefFeculents ?? 1 })),
+          ).map((j) => [j.date, j]),
+        )
+      : null;
   return (
     <>
       <OngletsSemaine plan={plan} semaine={semaine} vue="" />
@@ -67,6 +81,7 @@ export function SemaineRepas({ plan, semaine }: { plan: Plan; semaine: Semaine }
               {dateLongue(j.date)} <span className="discret">J+{j.jours}</span>
             </h2>
             {vide && <p className="discret">Libre</p>}
+            {nutrition && <TotauxJour jour={nutrition.get(j.date)} personnes={plan.personnes} />}
             {(['midi', 'soir'] as const).map(
               (moment) =>
                 j.repas[moment].length > 0 && (
@@ -87,6 +102,13 @@ export function SemaineRepas({ plan, semaine }: { plan: Plan; semaine: Semaine }
         J0 = jour de la session. Vert : jusqu’à la borne basse ; orange : entre les bornes ; rouge : au-delà. Les durées et
         leurs sources sont dans Réglages.
       </p>
+      {nutrition && (
+        <p className="discret note">
+          Apports du jour : repas du plan uniquement (petit-déjeuner, collations et repas hors plan non comptés), une portion par
+          personne et par repas, calculés depuis la table Ciqual 2025 (ANSES). « ≥ » : des ingrédients n’ont pas pu être comptés (voir
+          la fiche de chaque recette). Objectifs et coefficients féculents : Réglages.
+        </p>
+      )}
     </>
   );
 }

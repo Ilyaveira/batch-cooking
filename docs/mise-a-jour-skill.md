@@ -20,7 +20,15 @@ Points clés :
 - Ne pas fournir les courses, « à sortir », la nutrition ni les durées de conservation :
   l'application les calcule. Indiquer seulement `conservation` (types : `plat-cuisine`, `soupe`,
   `quiche`, `oeufs-durs`, `pates`, `riz`, `poisson-cru`, ou un type créé dans les réglages de
-  l'app) et, si le code est certain, `ciqual.code`.
+  l'app).
+- Nutrition (calculée par l'app depuis la table Ciqual 2025 de l'ANSES) : pour chaque ingrédient,
+  donner `ciqual.code` = code Ciqual 2025 de l'aliment **dans l'état où la quantité est écrite**
+  (lentilles sèches, riz cru, pois chiches égouttés, filet de poulet cru…), seulement si la
+  correspondance est claire ; sinon l'omettre (l'app le signale et permet de le choisir).
+  Marquer `feculent: true` les féculents (riz, pâtes, semoule, légumineuses, pommes de terre,
+  pain) : l'app ajuste leur part selon la personne (coefficient réglé dans l'app). Préférer des
+  quantités en grammes ; `masseParUnite` seulement si la masse est connue (emballage), jamais
+  estimée. Ne plus écrire de valeurs nutritionnelles dans le document ni dans le JSON.
 - `coursesSupplementaires` : seulement ce qui n'est dans aucune recette (fruits du dessert, herbes
   en botte pour la semaine…).
 - Ordre de consommation : `plats[].repas[]` (date, `midi`/`soir`, `pour` si le plat n'est que
@@ -48,7 +56,8 @@ Points clés :
 
 Ajoutez à la liste des questions de départ :
 
-- « As-tu un fichier de notes exporté de l'app (`batch-cooking-notes-….json`) ? »
+- « As-tu un fichier de notes exporté de l'app (`batch-cooking-notes-….json`) ? » (l'export de la
+  bibliothèque, ci-dessous, contient aussi les notes : l'un ou l'autre suffit)
 
 Et cette règle dans « Règles de conception du menu » :
 
@@ -58,3 +67,26 @@ Et cette règle dans « Règles de conception du menu » :
   commentaires (« trop long », « plus épicé »…) et le dire quand une recette est adaptée.
   Garder le même `id` pour une recette reproposée, afin que ses notes restent attachées.
   Ne jamais inventer de note pour une recette qui n'en a pas.
+
+---
+
+## Réutiliser la bibliothèque (à ajouter dans « Déroulé », étape 1)
+
+Ajoutez à la liste des questions de départ :
+
+- « As-tu un export de la bibliothèque de l'app (`batch-cooking-bibliotheque-….json`) ? »
+
+Et ces règles dans « Règles de conception du menu » :
+
+- Si un fichier `batch-cooking-bibliotheque` est fourni, il contient chaque recette complète au
+  format du plan (`recette`, `ingredients`), ses `saisons` (« non renseignée » sinon), le résumé de
+  ses `notes` et sa `nutrition` calculée par l'app (intervalles par portion, étiquettes
+  « riche en protéines », « pauvre en glucides »…, `complet: false` si des ingrédients n'ont pas
+  été comptés).
+- Ne reproposer que des recettes dont les `saisons` contiennent la saison du mois ; une recette
+  sans saison (« non renseignée ») peut être proposée en le signalant, avec la saison proposée.
+- Une recette reprise garde **son `id`** et ses quantités, sauf adaptation annoncée ; reprendre
+  aussi ses ingrédients (avec `ciqual.code`, `feculent`, `masseParUnite`) dans le catalogue du plan.
+- Se servir des étiquettes et de la nutrition pour équilibrer la semaine (ex. assez de plats
+  « riche en protéines »), sans recopier de valeurs nutritionnelles dans le plan. Les objectifs
+  personnels ne sont pas dans l'export : les demander si besoin.

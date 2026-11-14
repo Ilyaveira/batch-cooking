@@ -57,6 +57,36 @@ Pour passer d'un appareil à l'autre :
   disparu est ignorée et signalée sur l'accueil). L'export du plan inclut tout : une modification
   « semaine » y devient une recette dérivée `<id>-s<n>`.
 
+### Nutrition, objectifs et étiquettes
+
+- **Calcul** : depuis la table [Ciqual 2025 de l'ANSES](https://doi.org/10.57745/RDMHWY)
+  (embarquée dans l'app, fonctionne hors ligne) : énergie, protéines, glucides, sucres, lipides,
+  acides gras saturés, fibres, sel, **par portion et par personne** (fiche recette) et **par jour
+  et par personne** (Repas, plats du plan seulement).
+- **Rien d'estimé** : un ingrédient sans code Ciqual, sans quantité ou dont la masse de l'unité est
+  inconnue (pièce, cuillère, boîte…) est listé « non compté » et les totaux deviennent des minimums
+  (« ≥ »). Bouton ✎ à côté de chaque ingrédient non compté : choisir l'aliment Ciqual (recherche),
+  saisir la masse d'une unité (à peser une fois), marquer « féculent ». Mémorisé pour tous les mois.
+  Les teneurs Ciqual « < x », « traces » ou absentes sont gardées comme des intervalles.
+- **Portions par personne** : chacun a la même part de tout, sauf les ingrédients marqués
+  **féculents**, répartis selon le **coefficient féculents** de chaque personne (Réglages ; ex.
+  0,75 contre 1). Le total du plat est conservé.
+- **Objectifs** (Réglages, par personne) : plages d'énergie (kcal/jour) et de protéines (g/jour).
+  La fiche indique la part de l'objectif du jour apportée par une portion ; les journées affichent
+  « dans l'objectif », « sous l'objectif », « au-dessus » ou « incertain ». Ces valeurs restent sur
+  le téléphone et ne sont dans aucun export pour Claude.
+- **Étiquettes nutritionnelles calculées** (fiche, bibliothèque avec filtre) : seuils des
+  allégations nutritionnelles du [règlement (CE) 1924/2006](https://food.ec.europa.eu/food-safety/labelling-and-nutrition/nutrition-and-health-claims/nutrition-claims_en)
+  (riche / source de protéines et de fibres, pauvre en matières grasses, en graisses saturées, en
+  sucres, en sel) ; « pauvre en glucides » n'ayant pas de définition réglementaire, son seuil est
+  personnel (Réglages, 26 % de l'énergie par défaut). Indicatives : ces règles visent les produits
+  vendus, et les seuils « pour 100 g » portent sur la masse des ingrédients tels que pesés.
+- **Étiquettes modifiables** : fiche recette → ✎ Étiquettes (saisons, étiquettes libres), pour
+  tous les mois.
+- **Réglages → Exporter la bibliothèque (pour Claude)** : toutes les recettes complètes (format du
+  plan), leurs ingrédients, saisons (« non renseignée » sinon), notes et nutrition par portion.
+  Consignes à ajouter à la skill : [`docs/mise-a-jour-skill.md`](docs/mise-a-jour-skill.md).
+
 ### Réorganiser et modifier les étapes
 
 Écran **Session → Réorganiser** :
@@ -92,14 +122,14 @@ fusions, voir SCHEMA.md).
 | Écran | Contenu |
 |---|---|
 | Plan | Semaines du mois, plats, portions, plats « en double », alertes (aliments exclus, repas hors délai). |
-| Repas | « Quand manger quoi » du dimanche soir au jeudi (réglable), avec J+n et un statut de conservation par repas. |
+| Repas | « Quand manger quoi » du dimanche soir au jeudi (réglable), avec J+n et un statut de conservation par repas, et les apports du jour par personne comparés aux objectifs. |
 | Courses | Quantités agrégées par ingrédient, triées par rayon, à cocher ; détail par recette. |
 | Placard | Liste mensuelle à vérifier, avec ce que les recettes du mois en utilisent. |
 | Planning | Dans Session : Gantt d'une ligne par tâche (bleu : actif, vert : cuisson passive, rouge : à surveiller), calculé à partir des étapes, y compris celles modifiées dans l'app. Toucher une barre affiche l'étape ; « Agrandir en paysage » ouvre le planning en plein écran, tourné, tout tient à l'écran. |
 | Session | « À sortir » à cocher (frigo, congélateur, légumes, placard, ustensiles ; compteur et « Tout décocher ») et étapes horodatées par tranches de 30 min, poste en couleur, ingrédients en gras. Bouton **Réorganiser** : déplacer une étape (n° ou flèches), changer son heure, modifier son texte, la scinder, ou la fusionner avec la suivante. |
 | Mode cuisine | Gros texte, écran maintenu allumé (Screen Wake Lock), minuteurs avec rappels (vibration + bip), étapes à cocher, chrono de session. **Heure de début** facultative : les étapes affichent alors l'heure réelle (14:30, 14:35…). |
-| Recettes | Bibliothèque (recherche, filtres végétarien / féculent / saison / note, tri par nom, goût, facilité ou dernière fois cuisinée), fiche avec portions ajustables et **notes** (facilité et goût de 1 à 5 par personne, commentaire, date, historique et moyennes). |
-| Réglages | Personnes et aliments exclus, durées de conservation (avec leur source), four (chaleur tournante, écart), Cook Expert, sauvegarde. |
+| Recettes | Bibliothèque (recherche, filtres végétarien / féculent / saison / étiquette nutritionnelle / note, tri par nom, goût, facilité ou dernière fois cuisinée), fiche avec portions ajustables, **nutrition par portion et par personne**, étiquettes modifiables et **notes** (facilité et goût de 1 à 5 par personne, commentaire, date, historique et moyennes). |
+| Réglages | Personnes, aliments exclus, **objectifs (énergie, protéines) et coefficient féculents**, seuil « pauvre en glucides », durées de conservation (avec leur source), four (chaleur tournante, écart), Cook Expert, sauvegarde, exports (notes, bibliothèque). |
 
 ### Règles de calcul (aucune valeur inventée)
 
@@ -112,6 +142,12 @@ fusions, voir SCHEMA.md).
   rouge au-delà ; si une recette a plusieurs types, le plus court s'applique ; sans type, « durée
   non renseignée ». Les valeurs par défaut reprennent celles citées dans le plan de novembre, avec
   leur source affichée ; elles se modifient dans les réglages.
+- **Nutrition** : teneur Ciqual pour 100 g × masse de la ligne (g et kg directs ; autres unités
+  via `masseParUnite`). Portion = recette ÷ portions ; part de féculents d'une personne =
+  coefficient × nombre de mangeurs ÷ somme des coefficients. Énergie des macronutriments pour
+  les étiquettes : 4 kcal/g (protéines, glucides), 9 kcal/g (lipides), règlement (UE) 1169/2011,
+  annexe XIV. Protéines : « N × 6,25 » (code Ciqual 25003). Une étiquette n'est attribuée que si
+  elle est vraie pour toutes les valeurs possibles de l'intervalle ; sinon « indéterminé ».
 - **Four** : les températures des étapes du poste Four sont annotées pour le mode de votre four
   (écart réglable, 20 °C par défaut). Les températures du Cook Expert ne sont pas touchées.
 
@@ -141,8 +177,12 @@ npm run valider -- fixtures/novembre-2026-semaine1.json
 
 - `npm run build` régénère `public/schema/plan-v1.schema.json`, vérifie les types et produit `dist/`.
 - `npm run valider -- <fichier>` vérifie un plan en ligne de commande.
-- Parcours de bout en bout sur mobile émulé : `tests/e2e/parcours-mobile.cjs`, `reorganisation-mobile.cjs`, `edition-mobile.cjs`, `dependances-mobile.cjs`, `v2-mobile.cjs`, `sortir-mobile.cjs`, `ingredients-mobile.cjs` (mode d'emploi en tête de chaque fichier).
+- Parcours de bout en bout sur mobile émulé : `tests/e2e/parcours-mobile.cjs`, `reorganisation-mobile.cjs`, `edition-mobile.cjs`, `dependances-mobile.cjs`, `v2-mobile.cjs`, `sortir-mobile.cjs`, `ingredients-mobile.cjs`, `nutrition-mobile.cjs` (mode d'emploi en tête de chaque fichier).
 - Icônes : `node scripts/generer-icones.mjs` (Playwright requis).
+- Table Ciqual : `public/data/ciqual-2025.json` est produit par
+  `npx tsx scripts/construire-ciqual.ts <dossier>` à partir des fichiers XML `alim.xml`,
+  `alim_grp.xml` et `compo.xml` de [Ciqual 2025](https://doi.org/10.57745/RDMHWY) (seuls les
+  constituants utiles sont gardés, valeurs recopiées telles quelles).
 
 ### Structure du projet
 
@@ -159,6 +199,8 @@ src/
 │  ├─ gantt.ts        Géométrie du planning (barres, graduations)
 │  ├─ modifications.ts Ingrédients modifiés dans l'app (infos, recettes semaine / mois, export)
 │  ├─ notation.ts     Notes : moyennes, tri, filtres, export
+│  ├─ nutrition.ts    Nutrition Ciqual (intervalles), portions par personne, étiquettes, journées
+│  ├─ bibliotheque.ts Étiquettes modifiées, export de la bibliothèque pour Claude
 │  ├─ reorganisation.ts Étapes modifiées dans l'app (ordre, heures, textes, scissions, fusions)
 │  ├─ exclusions.ts   Aliments exclus par personne
 │  └─ reglages.ts     Réglages par défaut sourcés, températures du four
@@ -166,7 +208,8 @@ src/
 ├─ features/          Écrans (Accueil, Importer, Courses, Session, Cuisine, Recettes, Réglages…)
 ├─ ui/                Composants communs et minuteurs
 └─ app/               Routage (hash), mise en page, hooks
-scripts/              Génération du JSON Schema, validation en ligne de commande, icônes
+scripts/              JSON Schema, validation en ligne de commande, icônes, table Ciqual
+public/data/          Extrait de la table Ciqual 2025 (Licence Ouverte Etalab 2.0)
 fixtures/             Exemple : semaine 1 de novembre 2026 convertie au format v1
 tests/e2e/            Parcours mobile Playwright
 ```
@@ -190,9 +233,9 @@ Le workflow `.github/workflows/deploy.yml` teste, construit et publie l'app à c
 - ~~Itération 2~~ (faite) : vue Gantt de la session ; notation des recettes avec historique, tri,
   filtre et export des notes pour Claude (Réglages → Exporter les notes ; consigne à ajouter à la
   skill dans `docs/mise-a-jour-skill.md`).
-- **Itération 3** : nutrition par portion depuis la table Ciqual de l'ANSES (kcal, protéines,
-  lipides, AGS, glucides, fibres, sel ; source affichée ; ingrédients non trouvés signalés) ;
-  profil et objectifs journaliers.
+- ~~Itération 3~~ (faite) : nutrition par portion et par personne depuis Ciqual 2025, objectifs
+  d'énergie et de protéines, étiquettes nutritionnelles calculées, étiquettes modifiables, export
+  de la bibliothèque.
 - **Itération 4** : Open Food Facts pour les produits de marque ; composer un plan dans l'app ;
   proposition automatique du calendrier.
 - **Itération 5** : synchronisation entre les deux téléphones.
@@ -204,6 +247,9 @@ Le workflow `.github/workflows/deploy.yml` teste, construit et publie l'app à c
   supplémentaires. La butternut est pesée épluchée dans les étapes (1,3 kg) alors que les courses
   du document indiquent « 2 moyennes (~2 kg) » : l'écart vient de la source.
 - Écran allumé : dépend du navigateur (voir plus haut pour iOS).
+- Nutrition : la masse après cuisson n'est pas connue (seuils « pour 100 g » sur la masse pesée) ;
+  les acides gras trans ne sont pas dans Ciqual ; Open Food Facts (produits de marque) n'est pas
+  encore branché.
 - `npm audit` signale des vulnérabilités modérées dans des dépendances de **build** de
   `vite-plugin-pwa` (glob/minimatch de workbox-build) ; elles ne sont pas incluses dans l'app.
 
@@ -212,4 +258,8 @@ Le workflow `.github/workflows/deploy.yml` teste, construit et publie l'app à c
 - Durées de conservation par défaut : [FoodSafety.gov — Cold Food Storage Chart](https://www.foodsafety.gov/food-safety-charts/cold-food-storage-charts),
   [NSW Food Authority — Leftovers](https://www.foodauthority.nsw.gov.au/node/23948),
   [Food Standards Scotland — Food storage](https://www.foodstandards.gov.scot/consumer-advice/food-safety/food-safety-in-the-kitchen/food-storage).
-- Table Ciqual (itération 3) : [ANSES — Ciqual](https://ciqual.anses.fr).
+- Données nutritionnelles : ANSES, *Table de composition nutritionnelle des aliments Ciqual 2025*,
+  publiée le 19/11/2025, [doi:10.57745/RDMHWY](https://doi.org/10.57745/RDMHWY),
+  [Licence Ouverte Etalab 2.0](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) ;
+  extrait réutilisé sans modification des valeurs (`public/data/ciqual-2025.json`).
+- Seuils des étiquettes : [Commission européenne — allégations nutritionnelles (annexe du règlement (CE) 1924/2006)](https://food.ec.europa.eu/food-safety/labelling-and-nutrition/nutrition-and-health-claims/nutrition-claims_en).

@@ -111,6 +111,10 @@
             ],
             "additionalProperties": false
           },
+          "feculent": {
+            "description": "true = féculent (riz, pâtes, semoule, légumineuses, pommes de terre, pain…) : sa part dans une portion suit le coefficient « féculents » de chaque personne.",
+            "type": "boolean"
+          },
           "masseParUnite": {
             "description": "Masse en grammes d’une unité non massique (ex. {\"piece\": 60} pour un œuf), si elle est connue. Sert au calcul nutritionnel ; ne jamais l’inventer.",
             "type": "object",

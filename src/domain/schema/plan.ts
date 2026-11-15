@@ -43,11 +43,11 @@ export const ingredientSchema = z.strictObject({
     .optional()
     .describe('true = produit de fond de placard (épices, huiles…) : vérifié une fois par mois, absent des courses hebdomadaires.'),
   ciqual: z
-    .object({ code: z.string().regex(/^\d+$/, 'code Ciqual numérique attendu') })
+    .strictObject({ code: z.string().regex(/^\d+$/, 'code Ciqual numérique attendu') })
     .optional()
     .describe('Code de l’aliment dans la table Ciqual de l’ANSES (aliment cru ou cuit selon l’état pesé).'),
   off: z
-    .object({ codeBarres: z.string().regex(/^\d{8,14}$/, 'code-barres EAN de 8 à 14 chiffres attendu') })
+    .strictObject({ codeBarres: z.string().regex(/^\d{8,14}$/, 'code-barres EAN de 8 à 14 chiffres attendu') })
     .optional()
     .describe('Code-barres Open Food Facts pour un produit de marque.'),
   feculent: z
@@ -78,7 +78,7 @@ export const recetteSchema = z.strictObject({
     .optional()
     .describe('Clés des types de conservation (réglages de l’app) : « plat-cuisine », « soupe », « quiche », « oeufs-durs », « pates », « riz », « poisson-cru »… Le plus court s’applique.'),
   tags: z
-    .object({
+    .strictObject({
       saisons: z.array(z.enum(SAISONS)).optional(),
       vegetarien: z.boolean().optional(),
       feculents: z.array(z.enum(FECULENTS)).optional(),
@@ -86,14 +86,14 @@ export const recetteSchema = z.strictObject({
     })
     .optional(),
   durees: z
-    .object({
+    .strictObject({
       preparationMin: z.number().int().nonnegative().optional(),
       cuissonMin: z.number().int().nonnegative().optional(),
     })
     .optional(),
   ustensiles: z.array(z.string().min(1)).optional(),
   four: z
-    .object({
+    .strictObject({
       temperatureC: z.number().int().min(30).max(300),
       mode: z.enum(MODES_FOUR).describe('Mode pour lequel la température est écrite.'),
     })

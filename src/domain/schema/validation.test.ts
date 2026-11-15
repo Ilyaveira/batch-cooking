@@ -8,6 +8,24 @@ describe('validerPlan', () => {
     expect(r.ok).toBe(true);
   });
 
+  it('refuse une clé inconnue partout, sous-objets compris (rien n’est effacé en silence)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const essais: ((p: any) => void)[] = [
+      (p) => Object.assign(p.ingredients[0]!.ciqual!, { inconnu: 1 }),
+      (p) => Object.assign(p.recettes[0]!.tags!, { inconnu: 1 }),
+      (p) => Object.assign(p.recettes[0]!, { durees: { preparationMin: 5, inconnu: 1 } }),
+      (p) => Object.assign(p.recettes[1]!, { four: { temperatureC: 200, mode: 'traditionnel', inconnu: 1 } }),
+      (p) => Object.assign(p.ingredients[0]!, { off: { codeBarres: '12345678', inconnu: 1 } }),
+    ];
+    for (const modifier of essais) {
+      const p = fixtureBrute();
+      modifier(p);
+      const r = validerPlan(p);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.erreurs[0]!.message).toMatch(/inconnu/);
+    }
+  });
+
   it('accepte une chaîne JSON', () => {
     expect(validerPlan(JSON.stringify(fixtureBrute())).ok).toBe(true);
   });

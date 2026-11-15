@@ -10,6 +10,9 @@ import {
   lireTableCiqual,
   lireValeurCiqual,
   masseLigne,
+  motsSignificatifs,
+  proposerAliments,
+  raisonFeculent,
   nutritionRecette,
   nutritionSemaine,
   partEnergie,
@@ -218,6 +221,27 @@ describe('avec la table Ciqual 2025 et le plan d’exemple', () => {
   it('recherche sans accents', () => {
     expect(chercherAliments(vraie, 'lentille verte').map((a) => a.code)).toContain('20585');
     expect(chercherAliments(vraie, 'oeuf cru')[0]!.code).toBe('22000');
+  });
+
+  it('propositions d’après le nom : mots vides ignorés, à faire confirmer', () => {
+    const noms = (nom: string) => proposerAliments(vraie, nom, 4).map((p) => p.aliment.nom);
+    expect(motsSignificatifs('Blancs de poulet')).toEqual(['blanc', 'poulet']);
+    expect(noms('Lentilles vertes')[0]).toBe('Lentille verte, sèche');
+    expect(proposerAliments(vraie, 'Lentilles vertes')[0]!.complete).toBe(true);
+    expect(noms('Blancs de poulet').some((n) => n.startsWith('Poulet'))).toBe(true);
+    // Mot identique avant simple début de mot : « Sel » ne propose pas « Selles-sur-Cher ».
+    expect(noms('Sel').every((n) => n.startsWith('Sel '))).toBe(true);
+    // Mot Ciqual plus court au début du mot cherché : « Tahini » → « Tahin ou purée de sésame ».
+    expect(noms('Tahini')[0]).toBe('Tahin ou purée de sésame');
+    // Absent de Ciqual : rien de complet.
+    expect(proposerAliments(vraie, 'Cottage cheese').some((p) => p.complete)).toBe(false);
+    expect(proposerAliments(vraie, 'de la')).toEqual([]);
+  });
+
+  it('féculent proposé d’après le sous-groupe Ciqual', () => {
+    expect(raisonFeculent(vraie.aliments.get('20585')!)).toBe('légumineuses');
+    expect(raisonFeculent(vraie.aliments.get('9119')!)).toBe('pâtes, riz et céréales');
+    expect(raisonFeculent(vraie.aliments.get('12066')!)).toBeNull();
   });
 
   it('journées de la semaine 1 : repas comptés par personne', () => {

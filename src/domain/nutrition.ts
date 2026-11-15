@@ -101,6 +101,68 @@ export function chercherAliments(table: TableCiqual, texte: string, max = 15): A
   return trouves.sort((x, y) => x.rang - y.rang).slice(0, max).map((t) => t.a);
 }
 
+const MOTS_VIDES = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'en', 'au', 'aux', 'a', 'd', 'l', 'et', 'ou', 'un', 'une']);
+
+/** Mots utiles d'un nom pour la recherche (sans accents, singulier, sans mots vides ni chiffres seuls). */
+export function motsSignificatifs(nom: string): string[] {
+  return [...new Set(normaliser(nom).filter((m) => !MOTS_VIDES.has(m) && !/^\d+$/.test(m)))];
+}
+
+export type PropositionAliment = {
+  aliment: AlimentCiqual;
+  /** Mots du nom de l'ingrédient retrouvés dans le nom Ciqual. */
+  retrouves: number;
+  /** true si tous les mots significatifs sont retrouvés. Jamais une présélection : plusieurs
+   * aliments peuvent l'être (« Sucre » : sucre blanc, sucre roux…). */
+  complete: boolean;
+};
+
+/** Un mot de l'ingrédient correspond à un mot Ciqual : identique, début de mot (« lentil » →
+ * « lentille »), ou mot Ciqual d'au moins 4 lettres au début du mot cherché (« tahini » → « tahin »). */
+const correspond = (m: string, x: string) => x.startsWith(m) || (x.length >= 4 && m.startsWith(x));
+
+/**
+ * Propositions d'aliments Ciqual pour un nom d'ingrédient, à faire confirmer : classées par nombre
+ * de mots retrouvés, puis de mots identiques, puis nom Ciqual commençant par l'un d'eux, puis nom le
+ * plus court. Ce n'est qu'une aide à la recherche : l'aliment et son état (cru, cuit…) restent à
+ * choisir par la personne.
+ */
+export function proposerAliments(table: TableCiqual, nom: string, n = 3): PropositionAliment[] {
+  const mots = motsSignificatifs(nom);
+  if (mots.length === 0) return [];
+  const trouves: (PropositionAliment & { rang: number })[] = [];
+  for (const a of table.aliments.values()) {
+    const motsAliment = normaliser(a.nom);
+    const retrouves = mots.filter((m) => motsAliment.some((x) => correspond(m, x))).length;
+    if (retrouves === 0) continue;
+    const identiques = mots.filter((m) => motsAliment.includes(m)).length;
+    const commence = mots.some((m) => motsAliment[0] !== undefined && correspond(m, motsAliment[0])) ? 0 : 1;
+    trouves.push({
+      aliment: a,
+      retrouves,
+      complete: retrouves === mots.length,
+      rang: -retrouves * 1e7 - identiques * 1e5 + commence * 1000 + a.nom.length,
+    });
+  }
+  return trouves
+    .sort((x, y) => x.rang - y.rang)
+    .slice(0, n)
+    .map(({ rang: _r, ...p }) => p);
+}
+
+/** Sous-groupes Ciqual 2025 retenus comme féculents (codes de alim_grp.xml). */
+export const SOUS_GROUPES_FECULENTS: Record<string, string> = {
+  '0202': 'pommes de terre et autres tubercules',
+  '0203': 'légumineuses',
+  '0301': 'pâtes, riz et céréales',
+  '0302': 'pains et assimilés',
+};
+
+/** Raison de proposer « féculent » pour un aliment Ciqual, ou null. */
+export function raisonFeculent(a: AlimentCiqual): string | null {
+  return SOUS_GROUPES_FECULENTS[a.sousGroupe] ?? null;
+}
+
 // --- Calcul pour une liste d'ingrédients ------------------------------------------------------
 
 export type RaisonManque = 'sans-code' | 'code-inconnu' | 'quantite' | 'masse';

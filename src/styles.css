@@ -1252,3 +1252,46 @@ fieldset {
 .objectifs {
   margin-top: 0.5rem;
 }
+
+/* Compléter la nutrition */
+.liste-completer {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.propositions {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.4rem 0;
+}
+.proposition {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.35rem 0;
+}
+.proposition input {
+  margin-top: 0.25rem;
+  flex: none;
+}
+.proposition span {
+  min-width: 0;
+}
+.barre-enregistrer {
+  position: sticky;
+  bottom: 4.5rem;
+  margin-top: 1rem;
+  padding: 0.6rem;
+  border-radius: var(--rayon);
+  background: var(--surface);
+  border: 1px solid var(--bordure);
+  display: grid;
+  gap: 0.4rem;
+}
+.ligne-completer .champ,
+.ligne-completer legend {
+  text-align: left;
+}

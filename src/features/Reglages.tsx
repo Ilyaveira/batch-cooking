@@ -213,6 +213,11 @@ export function Reglages() {
 
       <section className="carte">
         <h2>Nutrition</h2>
+        <p>
+          <Link className="bouton-secondaire" to="/nutrition">
+            Compléter la nutrition des ingrédients
+          </Link>
+        </p>
         <label className="champ champ-nombre">
           Seuil « pauvre en glucides » (% de l’énergie)
           <input

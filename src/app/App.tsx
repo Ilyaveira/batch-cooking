@@ -2,6 +2,7 @@
 import { HashRouter, Navigate, NavLink, Outlet, Route, Routes, useParams } from 'react-router-dom';
 import { Accueil } from '../features/Accueil';
 import { Bibliotheque } from '../features/Bibliotheque';
+import { CompleterNutrition } from '../features/CompleterNutrition';
 import { Courses } from '../features/Courses';
 import { Cuisine } from '../features/Cuisine';
 import { FicheRecette } from '../features/FicheRecette';
@@ -87,6 +88,7 @@ export function App() {
           <Route path="recettes" element={<Bibliotheque />} />
           <Route path="recettes/:id" element={<FicheRecette />} />
           <Route path="reglages" element={<Reglages />} />
+          <Route path="nutrition" element={<CompleterNutrition />} />
           <Route path="*" element={<Navigate replace to="/" />} />
         </Route>
       </Routes>

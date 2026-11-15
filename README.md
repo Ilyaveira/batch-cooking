@@ -67,6 +67,10 @@ Pour passer d'un appareil à l'autre :
   inconnue (pièce, cuillère, boîte…) est listé « non compté » et les totaux deviennent des minimums
   (« ≥ »). Bouton ✎ à côté de chaque ingrédient non compté : choisir l'aliment Ciqual (recherche),
   saisir la masse d'une unité (à peser une fois), marquer « féculent ». Mémorisé pour tous les mois.
+  **Compléter la nutrition** (lien depuis le bandeau « calcul incomplet », ou Réglages → Nutrition) :
+  tous les ingrédients du plan sans aliment Ciqual sur un seul écran, avec des propositions d'après
+  le nom et « féculent » proposé d'après le groupe Ciqual (pâtes, riz et céréales ; légumineuses ;
+  pommes de terre ; pains). Rien n'est enregistré sans votre choix.
   Les teneurs Ciqual « < x », « traces » ou absentes sont gardées comme des intervalles.
 - **Portions par personne** : chacun a la même part de tout, sauf les ingrédients marqués
   **féculents**, répartis selon le **coefficient féculents** de chaque personne (Réglages ; ex.
@@ -177,7 +181,7 @@ npm run valider -- fixtures/novembre-2026-semaine1.json
 
 - `npm run build` régénère `public/schema/plan-v1.schema.json`, vérifie les types et produit `dist/`.
 - `npm run valider -- <fichier>` vérifie un plan en ligne de commande.
-- Parcours de bout en bout sur mobile émulé : `tests/e2e/parcours-mobile.cjs`, `reorganisation-mobile.cjs`, `edition-mobile.cjs`, `dependances-mobile.cjs`, `v2-mobile.cjs`, `sortir-mobile.cjs`, `ingredients-mobile.cjs`, `nutrition-mobile.cjs` (mode d'emploi en tête de chaque fichier).
+- Parcours de bout en bout sur mobile émulé : `tests/e2e/parcours-mobile.cjs`, `reorganisation-mobile.cjs`, `edition-mobile.cjs`, `dependances-mobile.cjs`, `v2-mobile.cjs`, `sortir-mobile.cjs`, `ingredients-mobile.cjs`, `nutrition-mobile.cjs`, `completer-nutrition-mobile.cjs` (mode d'emploi en tête de chaque fichier).
 - Icônes : `node scripts/generer-icones.mjs` (Playwright requis).
 - Table Ciqual : `public/data/ciqual-2025.json` est produit par
   `npx tsx scripts/construire-ciqual.ts <dossier>` à partir des fichiers XML `alim.xml`,

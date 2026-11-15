@@ -1,6 +1,7 @@
 // Affichage de la nutrition calculée (Ciqual 2025) : par portion et par personne sur la fiche
 // recette, total par jour et par personne dans « quand manger quoi », comparés aux objectifs.
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useCiqual, useReglages } from '../app/hooks';
 import type { PersonneReglages, Reglages } from '../domain/reglages';
 import {
@@ -112,7 +113,7 @@ export function SectionNutrition({ recette, catalogue, mangeurs }: { recette: Re
       {!n.total.complet && (
         <p className="bandeau-info" role="note">
           Calcul incomplet : {manques.length} ingrédient{manques.length > 1 ? 's' : ''} non compté{manques.length > 1 ? 's' : ''}. Les
-          valeurs sont des minimums (« ≥ »).
+          valeurs sont des minimums (« ≥ »). <Link to="/nutrition">Compléter tous les ingrédients du plan</Link>
         </p>
       )}
       <div className="tableau-defilant">

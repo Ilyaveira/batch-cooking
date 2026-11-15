@@ -178,6 +178,8 @@ export type Bilan = {
   manques: Manque[];
   approximations: Approximation[];
   facultatifsIgnores: string[];
+  /** Ingrédients que la personne a choisi de ne pas compter (quantité négligeable). */
+  negligesParChoix: string[];
 };
 
 export const LIBELLES_MANQUE: Record<RaisonManque, string> = {
@@ -195,6 +197,7 @@ export function bilanVide(): Bilan {
     manques: [],
     approximations: [],
     facultatifsIgnores: [],
+    negligesParChoix: [],
   };
 }
 
@@ -217,8 +220,17 @@ export function masseLigne(quantite: number, unite: LigneIngredient['unite'], in
   return null;
 }
 
-/** Bilan nutritionnel d'une liste de lignes (quantités telles quelles). */
-export function bilanLignes(lignes: LigneIngredient[], catalogue: Map<string, Ingredient>, table: TableCiqual): Bilan {
+/**
+ * Bilan nutritionnel d'une liste de lignes (quantités telles quelles). Les ingrédients de `negliges`
+ * (choix de la personne : quantité négligeable) ne sont pas comptés et ne rendent pas le calcul
+ * incomplet ; ils sont listés à part.
+ */
+export function bilanLignes(
+  lignes: LigneIngredient[],
+  catalogue: Map<string, Ingredient>,
+  table: TableCiqual,
+  negliges: ReadonlySet<string> = new Set(),
+): Bilan {
   const b = bilanVide();
   const inconnu = () => {
     b.complet = false;
@@ -229,6 +241,10 @@ export function bilanLignes(lignes: LigneIngredient[], catalogue: Map<string, In
     const nom = ing?.nom ?? l.ingredient;
     if (l.facultatif) {
       b.facultatifsIgnores.push(nom);
+      continue;
+    }
+    if (negliges.has(l.ingredient)) {
+      b.negligesParChoix.push(nom);
       continue;
     }
     const code = ing?.ciqual?.code;
@@ -268,6 +284,7 @@ export function additionnerBilans(bilans: Bilan[]): Bilan {
     r.manques.push(...b.manques);
     r.approximations.push(...b.approximations);
     r.facultatifsIgnores.push(...b.facultatifsIgnores);
+    r.negligesParChoix.push(...b.negligesParChoix);
   }
   return r;
 }
@@ -307,10 +324,11 @@ export function nutritionRecette(
   catalogue: Map<string, Ingredient>,
   table: TableCiqual,
   mangeurs: Mangeur[],
+  negliges: ReadonlySet<string> = new Set(),
 ): NutritionRecette {
   const estFeculent = (l: LigneIngredient) => catalogue.get(l.ingredient)?.feculent === true;
-  const f = bilanLignes(recette.ingredients.filter(estFeculent), catalogue, table);
-  const autres = bilanLignes(recette.ingredients.filter((l) => !estFeculent(l)), catalogue, table);
+  const f = bilanLignes(recette.ingredients.filter(estFeculent), catalogue, table, negliges);
+  const autres = bilanLignes(recette.ingredients.filter((l) => !estFeculent(l)), catalogue, table, negliges);
   const total = additionnerBilans([autres, f]);
   const P = recette.portions;
   const portion = multiplierBilan(total, 1 / P);
@@ -326,6 +344,60 @@ export function nutritionRecette(
     parPersonne,
     feculents: [...new Set(recette.ingredients.filter(estFeculent).map((l) => catalogue.get(l.ingredient)!.nom))],
   };
+}
+
+// --- Ce qui manque dans un plan -----------------------------------------------------------------
+
+export type ManquesIngredient = {
+  ingredient: Ingredient;
+  /** Recettes du plan qui citent l'ingrédient. */
+  recettes: string[];
+  /** Unités non massiques employées (masse d'une unité utile au calcul). */
+  unites: LigneIngredient['unite'][];
+  sansCode: boolean;
+  codeInconnu: boolean;
+  /** Unités employées dont la masse est inconnue. */
+  massesManquantes: LigneIngredient['unite'][];
+  /** Recettes où la quantité n'est pas précisée. */
+  quantitesNonPrecisees: { recetteId: string; recette: string; unite: LigneIngredient['unite'] }[];
+  negligeable: boolean;
+};
+
+/**
+ * Pour chaque ingrédient cité par les recettes du plan : ce qui empêche de le compter (aliment,
+ * masse d'une unité, quantité). Les lignes facultatives sont ignorées, comme dans le calcul.
+ */
+export function manquesDuPlan(plan: Plan, table: TableCiqual, negliges: ReadonlySet<string> = new Set()): ManquesIngredient[] {
+  const catalogue = new Map(plan.ingredients.map((i) => [i.id, i]));
+  const parId = new Map<string, ManquesIngredient>();
+  for (const r of plan.recettes) {
+    for (const l of r.ingredients) {
+      const ing = catalogue.get(l.ingredient);
+      if (!ing || l.facultatif) continue;
+      const code = ing.ciqual?.code;
+      const m = parId.get(ing.id) ?? {
+        ingredient: ing,
+        recettes: [],
+        unites: [],
+        sansCode: !code,
+        codeInconnu: !!code && !table.aliments.has(code),
+        massesManquantes: [],
+        quantitesNonPrecisees: [],
+        negligeable: negliges.has(ing.id),
+      };
+      if (!m.recettes.includes(r.nom)) m.recettes.push(r.nom);
+      if (familleDe(l.unite) !== 'masse' && !m.unites.includes(l.unite)) m.unites.push(l.unite);
+      if (l.quantite === null) m.quantitesNonPrecisees.push({ recetteId: r.id, recette: r.nom, unite: l.unite });
+      else if (masseLigne(l.quantite, l.unite, ing) === null && !m.massesManquantes.includes(l.unite)) m.massesManquantes.push(l.unite);
+      parId.set(ing.id, m);
+    }
+  }
+  return [...parId.values()].sort((a, b) => b.recettes.length - a.recettes.length || a.ingredient.nom.localeCompare(b.ingredient.nom, 'fr'));
+}
+
+/** L'ingrédient bloque-t-il encore le calcul d'au moins une recette (hors choix « négligeable ») ? */
+export function aCompleter(m: ManquesIngredient): boolean {
+  return !m.negligeable && (m.sansCode || m.codeInconnu || m.massesManquantes.length > 0 || m.quantitesNonPrecisees.length > 0);
 }
 
 // --- Étiquettes nutritionnelles ------------------------------------------------------------------
@@ -471,7 +543,13 @@ export type JourNutrition = { date: string; parPersonne: Map<string, { bilan: Bi
  * collations et repas hors plan ne sont pas comptés). Une personne mange une portion par repas, ou
  * `repas.portions` réparties entre les mangeurs du repas.
  */
-export function nutritionSemaine(plan: Plan, semaine: Semaine, table: TableCiqual, personnes: PersonneNutrition[]): JourNutrition[] {
+export function nutritionSemaine(
+  plan: Plan,
+  semaine: Semaine,
+  table: TableCiqual,
+  personnes: PersonneNutrition[],
+  negliges: ReadonlySet<string> = new Set(),
+): JourNutrition[] {
   const catalogue = new Map(plan.ingredients.map((i) => [i.id, i]));
   const recettes = new Map(plan.recettes.map((r) => [r.id, r]));
   const coef = new Map(personnes.map((p) => [p.id, p.coefFeculents]));
@@ -481,7 +559,7 @@ export function nutritionSemaine(plan: Plan, semaine: Semaine, table: TableCiqua
     const r = recettes.get(plat.recette);
     if (!r) continue;
     const mangeursPlat = (plat.pour ?? tous).map((id) => ({ id, coefFeculents: coef.get(id) ?? 1 }));
-    const n = nutritionRecette(r, catalogue, table, mangeursPlat);
+    const n = nutritionRecette(r, catalogue, table, mangeursPlat, negliges);
     for (const repas of plat.repas ?? []) {
       const pour = repas.pour ?? plat.pour ?? tous;
       const portionsChacun = (repas.portions ?? pour.length) / pour.length;

@@ -1,7 +1,8 @@
 // « Quand manger quoi » : repas du dimanche soir au dernier jour réglé, vérifiés contre
 // les durées de conservation des réglages.
 import { Link } from 'react-router-dom';
-import { useCiqual, useReglages } from '../app/hooks';
+import { useCiqual, usePlanActif, useReglages } from '../app/hooks';
+import { ingredientsNegliges } from '../domain/modifications';
 import { nutritionSemaine } from '../domain/nutrition';
 import { TotauxJour } from './Nutrition';
 import { calendrierSemaine, type EntreeRepas } from '../domain/calendrier';
@@ -48,6 +49,7 @@ export function SemaineRepas({ plan, semaine }: { plan: Plan; semaine: Semaine }
   const reglages = useReglages();
   const { jours, horsDelai } = calendrierSemaine(plan, semaine, reglages);
   const table = useCiqual();
+  const { infos } = usePlanActif();
   const nutrition =
     table && !(table instanceof Error)
       ? new Map(
@@ -56,6 +58,7 @@ export function SemaineRepas({ plan, semaine }: { plan: Plan; semaine: Semaine }
             semaine,
             table,
             plan.personnes.map((p) => ({ id: p.id, coefFeculents: reglages.personnes.find((x) => x.id === p.id)?.coefFeculents ?? 1 })),
+            ingredientsNegliges(infos),
           ).map((j) => [j.date, j]),
         )
       : null;

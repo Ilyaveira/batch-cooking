@@ -1,7 +1,7 @@
 // Bibliothèque de recettes : étiquettes modifiées dans l'app (saisons, étiquettes libres) et
 // export complet pour Claude (recettes au format du plan, saisons, notes, nutrition calculée).
 import { SAISONS, type Saison } from './constantes';
-import { appliquerInfosIngredient, type InfosIngredientPerso } from './modifications';
+import { appliquerInfosIngredient, ingredientsNegliges, type InfosIngredientPerso } from './modifications';
 import { exporterNotes, type Note } from './notation';
 import {
   etiquettesNutrition,
@@ -82,7 +82,7 @@ export function exporterBibliotheque(args: {
       'Recettes au format « recettes » et « ingredients » de SCHEMA.md, réutilisables telles quelles (garder les id). ' +
       'saisons = "non renseignée" quand la recette n’en a pas. notes : 1 (mauvais) à 5 (excellent). ' +
       'nutritionParPortion : calculée par l’app depuis Ciqual, intervalles {min, max} (max null = inconnu) ; ' +
-      'complet = false si des ingrédients n’ont pas pu être comptés (liste dans nonComptes).',
+      'complet = false si des ingrédients n’ont pas pu être comptés (liste dans nonComptes) ; nonComptesParChoix = ingrédients jugés négligeables par le foyer.',
     sourceNutrition: table ? { ...table.source } : null,
     recettes: recettes
       .map(({ recette: r0, ingredients }) => {
@@ -91,7 +91,7 @@ export function exporterBibliotheque(args: {
         const resume = notesParId.get(recette.id);
         let nutrition = null;
         if (table) {
-          const n = nutritionRecette(recette, new Map(catalogue.map((i) => [i.id, i])), table, []);
+          const n = nutritionRecette(recette, new Map(catalogue.map((i) => [i.id, i])), table, [], ingredientsNegliges(infos));
           nutrition = {
             parPortion: Object.fromEntries(NUTRIMENTS.map((k) => [k, arrondir(n.portion.valeurs[k], k === 'kcal' ? 0 : 1)])) as Record<
               Nutriment,
@@ -99,6 +99,7 @@ export function exporterBibliotheque(args: {
             >,
             complet: n.total.complet,
             nonComptes: n.total.manques.map((m) => `${m.nom} (${m.raison})`),
+            nonComptesParChoix: [...new Set(n.total.negligesParChoix)],
             etiquettes: etiquettesObtenues(etiquettesNutrition(n.total, seuilGlucidesPct)).map((e) => e.libelle),
           };
         }

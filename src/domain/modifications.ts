@@ -19,6 +19,8 @@ export type InfosIngredientPerso = {
   /** Masse d'une unité (g), saisie dans l'app (ex. un œuf pesé) ; remplace celle du plan pour ces unités. */
   masseParUnite?: Ingredient['masseParUnite'];
   feculent?: boolean;
+  /** Choix de la personne : quantité négligeable, ne pas compter dans la nutrition (hors format du plan). */
+  negligeable?: boolean;
   /** Ingrédient créé dans l'app (nom et rayon alors obligatoires). */
   cree?: boolean;
 };
@@ -27,6 +29,11 @@ export type InfosIngredientPerso = {
 export type RecettePerso = { mois: string; semaine: number; recetteId: string; ingredients: LigneIngredient[] };
 
 export class ErreurModification extends Error {}
+
+/** Ingrédients que la personne a choisi de ne pas compter dans la nutrition. */
+export function ingredientsNegliges(infos: InfosIngredientPerso[]): Set<string> {
+  return new Set(infos.filter((i) => i.negligeable).map((i) => i.id));
+}
 
 /** Catalogue d'ingrédients avec les infos modifiées et les ingrédients créés dans l'app. */
 export function appliquerInfosIngredients(plan: Plan, infos: InfosIngredientPerso[]): Plan {

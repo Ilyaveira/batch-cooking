@@ -51,6 +51,7 @@ const nombre = (t) => Number(t.replace(/[^\d,]/g, '').replace(',', '.'));
   const avant = await section.locator('tbody tr').first().locator('td').allInnerTexts();
   verifier(avant[0] === avant[1], `féculents non comptés (pois chiches, semoule) : A = B (${avant[0]} kcal)`);
   verifier(await section.getByText(/Calcul incomplet/).isVisible(), 'calcul incomplet signalé (quantités non précisées)');
+  verifier(/quantités? non précisées? dans la recette/.test(await section.locator('.bandeau-info').innerText()), 'bandeau : quantités non précisées distinguées (herbes, huile)');
   verifier(await section.getByText(/Pois chiches \(boîte de 400 g\) : masse de l’unité inconnue/).isVisible(), 'non compté : pois chiches (masse d’une boîte inconnue)');
   verifier(await section.getByText(/de l’objectif du jour \(1650–1750 kcal\)/).isVisible(), 'part de l’objectif journalier de la personne A');
   verifier(await section.getByRole('link', { name: /Ciqual 2025/ }).isVisible(), 'source Ciqual 2025 affichée');
@@ -90,6 +91,7 @@ const nombre = (t) => Number(t.replace(/[^\d,]/g, '').replace(',', '.'));
   // 6. Quand manger quoi : totaux du jour par personne avec position par rapport à l'objectif.
   await page.goto(`${URL}#/semaine/1`);
   const jour = page.locator('section.jour', { hasText: 'mardi 10 novembre' });
+  await jour.locator('.total-personne', { hasText: 'Personne A' }).getByText(/objectif/).waitFor();
   const totalA = await jour.locator('.total-personne', { hasText: 'Personne A' }).innerText();
   verifier(/kcal/.test(totalA) && /protéines/.test(totalA) && /objectif 1650–1750 kcal, 100–130 g/.test(totalA), `totaux du mardi pour A : « ${totalA.replace(/\s+/g, ' ')} »`);
   verifier(await jour.locator('.total-personne', { hasText: 'Personne A' }).locator('.objectif').first().isVisible(), 'pastille de position par rapport à l’objectif');

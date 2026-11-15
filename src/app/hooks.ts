@@ -13,6 +13,7 @@ import {
 } from '../data/depot';
 import type { EtiquettesPerso } from '../domain/bibliotheque';
 import { lireTableCiqual, type FichierCiqual, type TableCiqual } from '../domain/nutrition';
+import type { FichierPortions } from '../domain/portions-usda';
 import { appliquerInfosIngredients, appliquerRecettesMois, type InfosIngredientPerso, type RecettePerso } from '../domain/modifications';
 import { REGLAGES_DEFAUT, type Reglages } from '../domain/reglages';
 import type { Plan, Semaine } from '../domain/schema/plan';
@@ -104,6 +105,30 @@ export function useCiqual(): TableCiqual | Error | undefined {
     };
   }, []);
   return t;
+}
+
+let promessePortions: Promise<FichierPortions> | null = null;
+
+/** Masses moyennes par unité (USDA), pour proposer une masse d'unité ; null si indisponibles. */
+export function usePortionsUsda(): FichierPortions | null {
+  const [p, setP] = useState<FichierPortions | null>(null);
+  useEffect(() => {
+    let actif = true;
+    promessePortions ??= fetch(`${import.meta.env.BASE_URL}data/portions-usda.json`).then((r) => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json() as Promise<FichierPortions>;
+    });
+    promessePortions.then(
+      (x) => actif && setP(x),
+      () => {
+        promessePortions = null;
+      },
+    );
+    return () => {
+      actif = false;
+    };
+  }, []);
+  return p;
 }
 
 /** Étiquettes modifiées dans l'app, par recette. */

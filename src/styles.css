@@ -1295,3 +1295,16 @@ fieldset {
 .ligne-completer legend {
   text-align: left;
 }
+.masses-proposees {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.25rem 0 0.5rem;
+}
+.bouton-petit {
+  min-height: 44px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.9rem;
+  text-align: left;
+}

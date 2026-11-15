@@ -70,7 +70,12 @@ Pour passer d'un appareil à l'autre :
   **Compléter la nutrition** (lien depuis le bandeau « calcul incomplet », ou Réglages → Nutrition) :
   tous les ingrédients du plan sans aliment Ciqual sur un seul écran, avec des propositions d'après
   le nom et « féculent » proposé d'après le groupe Ciqual (pâtes, riz et céréales ; légumineuses ;
-  pommes de terre ; pains). Rien n'est enregistré sans votre choix.
+  pommes de terre ; pains). Rien n'est enregistré sans votre choix. L'écran regroupe tout ce qui
+  empêche de compter un ingrédient : aliment ou masse d'unité manquants (avec des **masses
+  moyennes proposées** d'après l'USDA, à accepter d'un geste ou à remplacer par une pesée),
+  quantités non précisées (lien vers la fiche), et une case **« Quantité négligeable, ne pas
+  compter »** (pincée d'épices, herbes) : l'ingrédient est alors exclu sans rendre le calcul
+  incomplet, et la fiche l'indique (« non comptés par choix »).
   Les teneurs Ciqual « < x », « traces » ou absentes sont gardées comme des intervalles.
 - **Portions par personne** : chacun a la même part de tout, sauf les ingrédients marqués
   **féculents**, répartis selon le **coefficient féculents** de chaque personne (Réglages ; ex.
@@ -266,4 +271,8 @@ Le workflow `.github/workflows/deploy.yml` teste, construit et publie l'app à c
   publiée le 19/11/2025, [doi:10.57745/RDMHWY](https://doi.org/10.57745/RDMHWY),
   [Licence Ouverte Etalab 2.0](https://www.etalab.gouv.fr/licence-ouverte-open-licence/) ;
   extrait réutilisé sans modification des valeurs (`public/data/ciqual-2025.json`).
+- Masses moyennes par unité : [USDA FoodData Central](https://fdc.nal.usda.gov/), SR Legacy (avril 2018),
+  mesures ménagères, domaine public (CC0 1.0, [licence](https://fdc.nal.usda.gov/api-guide)) ; extrait
+  `public/data/portions-usda.json` produit par `scripts/construire-portions.ts` pour les aliments de
+  `scripts/correspondances-usda.ts` (correspondance Ciqual ↔ USDA établie à la main, 51 aliments).
 - Seuils des étiquettes : [Commission européenne — allégations nutritionnelles (annexe du règlement (CE) 1924/2006)](https://food.ec.europa.eu/food-safety/labelling-and-nutrition/nutrition-and-health-claims/nutrition-claims_en).

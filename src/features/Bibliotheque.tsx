@@ -10,7 +10,7 @@ import { filtrerParNote, formaterMoyenne, resumerNotes, trierRecettes, type Crit
 import { listerInfosIngredients, listerNotes } from '../data/depot';
 import { useCiqual, useEtiquettesPerso, useReglages } from '../app/hooks';
 import { appliquerEtiquettes } from '../domain/bibliotheque';
-import { appliquerInfosIngredient } from '../domain/modifications';
+import { appliquerInfosIngredient, ingredientsNegliges } from '../domain/modifications';
 import { etiquettesNutrition, etiquettesObtenues, nutritionRecette, type CleEtiquette } from '../domain/nutrition';
 import { EnChargement } from '../ui/composants';
 
@@ -39,7 +39,7 @@ export function Bibliotheque() {
       const nutrition = ciqual
         ? etiquettesObtenues(
             etiquettesNutrition(
-              nutritionRecette(recette, new Map(e.ingredients.map((i) => [i.id, appliquerInfosIngredient(i, infos.find((x) => x.id === i.id))])), ciqual, []).total,
+              nutritionRecette(recette, new Map(e.ingredients.map((i) => [i.id, appliquerInfosIngredient(i, infos.find((x) => x.id === i.id))])), ciqual, [], ingredientsNegliges(infos)).total,
               reglages.nutrition.seuilGlucidesPct,
             ),
           )

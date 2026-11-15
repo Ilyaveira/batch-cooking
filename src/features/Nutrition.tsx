@@ -2,7 +2,8 @@
 // recette, total par jour et par personne dans « quand manger quoi », comparés aux objectifs.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useCiqual, useReglages } from '../app/hooks';
+import { useCiqual, usePlanActif, useReglages } from '../app/hooks';
+import { ingredientsNegliges } from '../domain/modifications';
 import type { PersonneReglages, Reglages } from '../domain/reglages';
 import {
   etiquettesNutrition,
@@ -69,6 +70,7 @@ export const coefDe = (reglages: Reglages, id: string) => reglages.personnes.fin
 export function SectionNutrition({ recette, catalogue, mangeurs }: { recette: Recette; catalogue: Ingredient[]; mangeurs: string[] }) {
   const table = useCiqual();
   const reglages = useReglages();
+  const { infos } = usePlanActif();
   const [edition, setEdition] = useState<string | null>(null);
   if (table === undefined)
     return (
@@ -86,10 +88,18 @@ export function SectionNutrition({ recette, catalogue, mangeurs }: { recette: Re
     );
   const parId = new Map(catalogue.map((i) => [i.id, i]));
   const personnes = mangeurs.map((id) => reglages.personnes.find((p) => p.id === id) ?? ({ id, nom: id, exclusions: [] } as PersonneReglages));
-  const n = nutritionRecette(recette, parId, table, personnes.map((p) => ({ id: p.id, coefFeculents: coefDe(reglages, p.id) })));
+  const n = nutritionRecette(
+    recette,
+    parId,
+    table,
+    personnes.map((p) => ({ id: p.id, coefFeculents: coefDe(reglages, p.id) })),
+    ingredientsNegliges(infos),
+  );
   const etiquettes = etiquettesNutrition(n.total, reglages.nutrition.seuilGlucidesPct);
   const obtenues = etiquettesObtenues(etiquettes);
   const manques = [...new Map(n.total.manques.map((m) => [`${m.ingredient}|${m.raison}`, m])).values()];
+  const aCompleterIci = new Set(manques.filter((m) => m.raison !== 'quantite').map((m) => m.ingredient)).size;
+  const quantites = manques.filter((m) => m.raison === 'quantite').length;
   const approx = [...new Map(n.total.approximations.map((a) => [`${a.ingredient}|${a.nutriment}`, a])).values()];
   // Une colonne par personne quand les portions peuvent différer ; sinon la portion moyenne.
   const parPersonne = personnes.length > 1 || personnes.some((p) => coefDe(reglages, p.id) !== 1);
@@ -112,8 +122,21 @@ export function SectionNutrition({ recette, catalogue, mangeurs }: { recette: Re
       )}
       {!n.total.complet && (
         <p className="bandeau-info" role="note">
-          Calcul incomplet : {manques.length} ingrédient{manques.length > 1 ? 's' : ''} non compté{manques.length > 1 ? 's' : ''}. Les
-          valeurs sont des minimums (« ≥ »). <Link to="/nutrition">Compléter tous les ingrédients du plan</Link>
+          Calcul incomplet : les valeurs sont des minimums (« ≥ »).
+          {aCompleterIci > 0 && (
+            <>
+              <br />
+              {aCompleterIci} ingrédient{aCompleterIci > 1 ? 's' : ''} sans aliment Ciqual ou sans masse d’unité :{' '}
+              <Link to="/nutrition">compléter la nutrition</Link>.
+            </>
+          )}
+          {quantites > 0 && (
+            <>
+              <br />
+              {quantites} quantité{quantites > 1 ? 's' : ''} non précisée{quantites > 1 ? 's' : ''} dans la recette : à corriger avec « Modifier les
+              ingrédients », ou à marquer « négligeable » dans <Link to="/nutrition">compléter la nutrition</Link>.
+            </>
+          )}
         </p>
       )}
       <div className="tableau-defilant">
@@ -198,6 +221,9 @@ export function SectionNutrition({ recette, catalogue, mangeurs }: { recette: Re
             cuillère d’huile), elle est mémorisée pour tous les mois.
           </p>
         </details>
+      )}
+      {n.total.negligesParChoix.length > 0 && (
+        <p className="discret petit">Non comptés par choix (quantité négligeable) : {[...new Set(n.total.negligesParChoix)].join(', ')}.</p>
       )}
       {n.total.facultatifsIgnores.length > 0 && <p className="discret petit">Ingrédients facultatifs non comptés : {[...new Set(n.total.facultatifsIgnores)].join(', ')}.</p>}
       {approx.length > 0 && (

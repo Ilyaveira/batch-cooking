@@ -32,12 +32,15 @@ const verifier = (cond, message) => {
   await page.getByRole('button', { name: 'Importer ce plan' }).click();
   await page.getByText(/importé/).first().waitFor();
 
-  // Depuis la fiche : bandeau « calcul incomplet » → lien vers l'assistant.
+  // Depuis la fiche : bandeau détaillé → lien vers l'assistant.
   await page.goto(`${URL}#/recettes/mujaddara?semaine=1`);
-  await page.getByRole('link', { name: 'Compléter tous les ingrédients du plan' }).click();
+  const bandeau = page.locator('.bandeau-info', { hasText: 'Calcul incomplet' });
+  verifier(/\d+ ingrédients? sans aliment Ciqual ou sans masse d’unité/.test(await bandeau.innerText()), 'bandeau : nombre d’ingrédients sans aliment ou sans masse');
+  await bandeau.getByRole('link', { name: 'compléter la nutrition' }).first().click();
   await page.getByRole('heading', { name: 'Compléter la nutrition' }).waitFor();
-  const titre = await page.getByRole('heading', { name: /Sans aliment Ciqual/ }).innerText();
-  verifier(/\((\d+)\)/.test(titre) && Number(/\((\d+)\)/.exec(titre)[1]) > 30, `liste des ingrédients sans code : « ${titre} »`);
+  const nombre = async () => Number(/\((\d+)\)/.exec(await page.getByRole('heading', { name: /Aliment ou masse à compléter/ }).innerText())[1]);
+  const avant = await nombre();
+  verifier(avant > 30, `ingrédients à compléter : ${avant}`);
   const coches = await page.locator('.ligne-completer input[type=radio]:checked').evaluateAll((l) => l.map((i) => i.closest('label').innerText));
   verifier(coches.length > 0 && coches.every((t) => t.startsWith('Aucun')), 'aucun aliment présélectionné (état actuel « Aucun »)');
 
@@ -56,30 +59,40 @@ const verifier = (cond, message) => {
   verifier((await cottage.locator('input[type=radio]:checked').count()) === 1, 'cottage cheese : aliment choisi par la recherche');
   verifier(!(await cottage.getByRole('checkbox', { name: /Féculent/ }).isChecked()), 'pas de féculent proposé pour un fromage');
 
-  // Œufs : aliment + masse d'une pièce (pesée).
+  // Œufs : aliment, puis masse moyenne USDA proposée (« 1 large » = 50 g), acceptée d'un geste.
   const oeufs = page.getByRole('group', { name: 'Œufs' });
+  verifier(/Manque : aliment Ciqual ; masse « pièce »/.test(await oeufs.innerText()), 'œufs : « manque : aliment Ciqual ; masse « pièce » »');
+  verifier(!(await oeufs.getByRole('button', { name: /g \(1 large\)/ }).count()), 'pas de masse proposée tant que l’aliment n’est pas choisi');
   await oeufs.getByRole('radio', { name: 'Oeuf cru' }).check();
-  await oeufs.getByLabel(/Masse d’une unité « pièce » \(g\)/).fill('55');
-  await page.screenshot({ path: `${OUT}/completer-1.png`, fullPage: false });
-  await page.getByRole('button', { name: /Enregistrer les choix \(4\)/ }).click();
-  await page.getByText('4 ingrédients enregistrés pour tous les mois.').waitFor();
-  verifier(true, 'enregistrement groupé : 4 ingrédients');
-  verifier((await page.getByRole('heading', { name: /Sans aliment Ciqual/ }).innerText()).includes(`(${Number(/\((\d+)\)/.exec(titre)[1]) - 4})`), 'les 4 ingrédients quittent la liste « sans aliment »');
+  verifier(await oeufs.getByText(/Masses moyennes USDA \(Egg, whole, raw, fresh\)/).isVisible(), 'masses moyennes USDA proposées, avec l’aliment USDA');
+  await oeufs.getByRole('button', { name: '50 g (1 large)' }).click();
+  verifier((await oeufs.getByLabel(/Masse d’une unité « pièce » \(g\)/).inputValue()) === '50', 'proposition acceptée : 50 g par pièce');
 
-  // Fiche : ces ingrédients sont comptés ; les lentilles et le riz sont des féculents.
+  // Cumin : « quantité négligeable, ne pas compter ».
+  await page.getByRole('group', { name: 'Cumin' }).getByLabel(/Quantité négligeable/).check();
+  await page.screenshot({ path: `${OUT}/completer-1.png`, fullPage: false });
+  await page.getByRole('button', { name: /Enregistrer les choix \(5\)/ }).click();
+  await page.getByText('5 ingrédients enregistrés pour tous les mois.').waitFor();
+  verifier((await nombre()) === avant - 5, `les 5 ingrédients quittent « à compléter » (${avant} → ${avant - 5})`);
+
+  // Fiche : ingrédients comptés, cumin « non compté par choix ».
   await page.goto(`${URL}#/recettes/mujaddara?semaine=1`);
   const section = page.locator('section', { has: page.getByRole('heading', { name: 'Nutrition par portion' }) });
   await section.locator('table').waitFor();
   const texte = await section.innerText();
-  verifier(!/Lentilles vertes : pas de code/.test(texte) && !/Œufs : /.test(texte) && !/Cottage cheese : /.test(texte), 'fiche : lentilles, œufs et cottage cheese comptés');
-  // Le marquage « féculent » est bien mémorisé (section « à vérifier » de l'assistant).
+  verifier(!/Lentilles vertes : /.test(texte) && !/Œufs : /.test(texte) && !/Cottage cheese : /.test(texte) && !/Cumin : /.test(texte), 'fiche : lentilles, œufs, cottage cheese comptés ; cumin plus signalé');
+  verifier(/Non comptés par choix \(quantité négligeable\) : Cumin/.test(texte), 'fiche : « non comptés par choix : Cumin »');
+
+  // Le marquage « féculent » et la masse sont mémorisés (section repliée de l'assistant).
   await page.goto(`${URL}#/nutrition`);
-  await page.getByText(/Avec un aliment Ciqual, à vérifier/).click();
+  await page.getByText(/Complets ou non comptés par choix/).click();
+  const lent = page.getByRole('group', { name: 'Lentilles vertes' });
   verifier(
-    (await page.getByRole('group', { name: 'Lentilles vertes' }).getByRole('checkbox', { name: /Féculent/ }).isChecked()) &&
+    (await lent.getByRole('checkbox', { name: /Féculent/ }).isChecked()) &&
       (await page.getByRole('group', { name: 'Riz basmati' }).getByRole('checkbox', { name: /Féculent/ }).isChecked()),
     'lentilles et riz enregistrés comme féculents',
   );
+  verifier(/actuelle : 50 g/.test(await page.getByRole('group', { name: 'Œufs' }).innerText()), 'œufs : masse actuelle 50 g');
 
   const large = await page.evaluate(() => window.innerWidth <= screen.width && document.documentElement.scrollWidth <= window.innerWidth);
   verifier(large, 'pas plus large que l’écran');
